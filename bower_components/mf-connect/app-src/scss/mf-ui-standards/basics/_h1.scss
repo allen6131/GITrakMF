@@ -1,0 +1,25 @@
+h1, .h1 {
+    @include mf-font-preset(xl);
+    font-weight: 500;
+    margin-bottom: $mf-buffer__medium;
+    margin-left: $mf-buffer__small;
+    margin-right: $mf-buffer__small;
+    margin-top: 0;
+
+    &.large {
+        @include mf-font-preset(3xl);
+        font-weight: 100;
+    }
+}
+@media (min-width: map-get($mf-breakpoints, medium)) {
+    h1, .h1 {
+        @include mf-font-preset(3xl);
+        margin-bottom: $mf-buffer__large;
+        margin-left: $mf-buffer__medium;
+        margin-right: $mf-buffer__medium;
+
+        &.small {
+            @include mf-font-preset(4xl);
+        }
+    }
+}

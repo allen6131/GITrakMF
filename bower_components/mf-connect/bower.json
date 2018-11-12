@@ -1,0 +1,13 @@
+{
+  "name": "mf-connect",
+  "description": "Medfusion Connect",
+  "private": "true",
+  "main": [
+    "public/styles/mf-connect.css",
+    "public/js/mf-connect.min.js"
+  ],
+  "dependencies": {
+	"bootstrap-sass": "^3.3.7"
+  },
+  "devDependencies": {}
+}

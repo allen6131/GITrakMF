@@ -1,0 +1,42 @@
+{
+  "directoryLocation": null,
+  "id": 14130,
+  "lastSuccessJob": {
+    "jobStatusMessage": "",
+    "nextJobWaitTime": 1525188974057
+  },
+  "latestJob": {
+    "jobStatusMessage": "",
+    "nextJobWaitTime": 1525188974051
+  },
+  "portalId": 145,
+  "profileId": 16473,
+  "providerNameAlias": null,
+  "providers": [
+    {
+      "directoryLocation": {
+        "address": {
+          "city": "Raleigh",
+          "latitude": 35.68368,
+          "longitude": -78.66415,
+          "state": "NC",
+          "zipcode": "27603"
+        },
+        "contacts": [
+          {
+            "type": "PHONE",
+            "value": "419-345-7402"
+          }
+        ],
+        "id": "7a36a769-38eb-42e5-8afc-8e3a99924f02",
+        "name": "Kelsey's Amazing Test Portal",
+        "source": "MEDFUSION",
+        "sourceId": "7a36a769-38eb-42e5-8afc-8e3a99924f02.mf",
+        "type": "OFFICE"
+      },
+      "id": 12928,
+      "nameAlias": "Kelseys Amazing Test Portal",
+      "providerId": 12928
+    }
+  ]
+}

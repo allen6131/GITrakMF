@@ -1,0 +1,56 @@
+[
+  {
+    "id": "AVh0FRq7xdCn8Jj8G5ZU",
+    "office": {
+      "type": "OFFICE",
+      "id": "fa13a38d-22a5-4370-b724-d055a8ea0626",
+      "source": "HEALTHGRADES",
+      "name": "DUKE UNIVERSITY",
+      "suite": "# 3094",
+      "type": "OFFICE",
+      "sourceId": "fa13a38d-22a5-4370-b724-d055a8ea0626.hg"
+    },
+    "provider": {
+      "id": "2d965876-6ee2-494a-ba24-7439b698f46e",
+      "source": "HEALTHGRADES",
+      "firstName": "Andrea",
+      "lastName": "Goodrich",
+      "middleName": "Louise",
+      "gender": "F",
+      "degree": "MD",
+      "npi": 1780828970,
+      "providerType": "DOC",
+      "sourceId": "2d965876-6ee2-494a-ba24-7439b698f46e.hg"
+    },
+    "address": {
+      "address": "2301 Erwin Rd",
+      "city": "Durham",
+      "state": "NC",
+      "zipcode": "27705"
+    },
+    "practice": {
+      "id": "9b4799cb-b744-44bc-a8ec-ff40b623db14",
+      "source": "HEALTHGRADES",
+      "name": "DUKE UNIVERSITY",
+      "sourceId": "9b4799cb-b744-44bc-a8ec-ff40b623db14.hg"
+    },
+    "facility": {
+      "type": "FACILITY",
+      "id": "4ac0091b-b9f4-4209-95d5-6dbe6f80213a",
+      "source": "HEALTHGRADES",
+      "name": "Duke University Hospital",
+      "contacts": [
+        {
+          "value": "(919) 684-8111",
+          "type": "PHONE"
+        }
+      ],
+      "type": "FACILITY",
+      "sourceId": "4ac0091b-b9f4-4209-95d5-6dbe6f80213a.hg"
+    },
+    "location": {
+      "lat": "36.00832",
+      "lon": "-78.93889"
+    }
+  }
+]

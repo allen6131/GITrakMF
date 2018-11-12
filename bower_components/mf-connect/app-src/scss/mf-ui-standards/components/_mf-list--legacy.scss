@@ -1,0 +1,390 @@
+// This list code uses legacy technology (i.e. not flexbox) for older browser compatibility.
+// Use .mf-list--modern if your browser support list allows it. This version makes some compromises in the
+// name of compatibility that .mf-list--modern doesn't have to.
+.mf-list--legacy {
+	border-top: 1px solid $mf-color__border--section;
+	margin: 0 0 $mf-buffer__molecule--after 0;
+	padding: 0;
+
+	// Remove top border from list
+	&.mf-roofless {
+		border-top: 0;
+	}
+
+	// List row
+	.mf-list__item,
+	&.mf-list__size--medium .mf-list__item {
+		@include mf-inner-grid();
+		@include mf-font-preset();
+
+		background-color: transparent;
+		border: 1px solid $mf-color__gray;
+		border-left: 0;
+		border-right: 0;
+		border-top: 0;
+		display: block;
+		min-height: map-get($mf-list-sizes, medium);
+		overflow: hidden;
+		padding-bottom: 0;
+		padding-top: 0;
+		position: relative;
+		text-align: left;
+		text-decoration: none;
+		width: 100%;
+		cursor: pointer;
+
+		// List rows with a normal size primary line and a small secondary line
+		&.mf-list--byline {
+			> .mf-list__element--primary {
+				margin-bottom: 3px;
+				padding-top: 10px;
+			}
+			> .mf-list__element--secondary {
+				margin-bottom: 12px;
+			}
+		}
+		&.mf-list--byline-first {
+			> .mf-list__element--primary {
+				margin-bottom: 12px;
+				padding-top: 0;
+			}
+			> .mf-list__element--secondary {
+				margin-bottom: 3px;
+				padding-top: 10px;
+			}
+		}
+
+		// List rows that have an element to the left
+		&.mf-list__element-left {
+			padding-left: $mf-buffer__2xl;
+
+			&--large {
+				padding-left: $mf-buffer__4xl;
+
+				.mf-consumer-avatar {
+					position: absolute;
+						left: $mf-buffer__small;
+						top: $mf-buffer__small;
+
+					@media (min-width: map-get($mf-breakpoints, medium)) {
+						left: $mf-buffer__medium;
+					}
+				}
+				.mf-icon {
+					position: absolute;
+						left: $mf-buffer__small;
+						top: 15px;
+
+					@media (min-width: map-get($mf-breakpoints, medium)) {
+						left: $mf-buffer__medium;
+					}
+				}
+			}
+
+			@media (min-width: map-get($mf-breakpoints, medium)) {
+				padding-left: $mf-buffer__3xl;
+			}
+
+			.mf-consumer-avatar,
+			.mf-icon {
+				position: absolute;
+					left: $mf-buffer__small;
+					top: 15px;
+
+				@media (min-width: map-get($mf-breakpoints, medium)) {
+					left: $mf-buffer__medium;
+				}
+			}
+		}
+
+		// Primary text in a list row
+		.mf-list__element--primary {
+			@include mf-font-preset();
+			margin: 0 0 22px 0;
+			padding-top: 21px;
+			padding-left: 0;
+			padding-right: 0;
+		}
+
+		// Consistent spacing to vertically center these items in list rows
+		// (the vertical centering isn't real, so if the list overflows these will stick toward the top of the row)
+		.mf-consumer-avatar,
+		.mf-icon,
+		.mf-icon.mf-list__pull-right,
+		.mf-list__pull-right .mf-icon {
+			top: 15px;
+		}
+		.mf-btn {
+			margin-top: 12px;
+		}
+
+		// Nested lists need a few tweaks
+		.mf-list--legacy {
+			border-top: 1px solid $mf-color__gray;
+			margin-bottom: 0;
+			margin-right: -($mf-buffer__small);
+
+			@media (min-width: map-get($mf-breakpoints, medium)) {
+				margin-right: -($mf-buffer__medium);
+			}
+
+			.mf-list__item:last-child {
+				border-bottom: none;
+			}
+		}
+
+		// List rows that have an element to the right
+		.mf-list__pull-right {
+			float: right;
+			margin-left: $mf-buffer__small;
+			min-height: $mf-buffer__xl;
+
+			&.mf-icon,
+			&.mf-consumer-avatar,
+			> .mf-icon,
+			> .mf-consumer-avatar {
+				margin-right: 0;
+				position: relative;
+					left: 0;
+			}
+			&.mf-btn,
+			> .mf-btn {
+				margin-top: 12px;
+			}
+			&.mf-checkbox {
+				margin-bottom: -1px;
+
+				> label {
+					padding-bottom: 23px;
+					padding-top: 23px;
+					padding-left: $mf-buffer__large;
+					padding-right: $mf-buffer__large;
+					margin-left: (-$mf-buffer__small);
+					margin-right: (-$mf-buffer__small);
+
+					&:after {
+						left: $mf-buffer__small;
+						margin-left: $mf-buffer__small + 1;
+						text-indent: 1px;
+					}
+					&:before {
+						margin-left: $mf-buffer__medium;
+					}
+				}
+			}
+		}
+
+		// Secondary line included in some list rows
+		.mf-list__element--secondary {
+			@include mf-font-preset(small,dim);
+			margin: 0 0 $mf-buffer__small 0;
+			padding-left: 0;
+			padding-right: 0;
+		}
+	}
+
+	// Tweaks for Extra Small (XS) size lists
+	&.mf-list__size--xs .mf-list__item {
+		min-height: map-get($mf-list-sizes, xs);
+		line-height: map-get($mf-list-sizes, xs);
+
+		// Primary label first, followed by secondary line
+		&.mf-list--byline {
+			> .mf-list__element--primary {
+				margin-bottom: 14px;
+			}
+			> .mf-list__element--secondary {
+				display: none;
+			}
+		}
+		// Secondary line first, followed by primary label
+		&.mf-list--byline-first {
+			> .mf-list__element--secondary {
+				display: none;
+			}
+		}
+
+		.mf-list__element--primary {
+			margin-bottom: 14px;
+			padding-top: 13px;
+		}
+
+		.mf-consumer-avatar,
+		.mf-icon,
+		.mf-icon.mf-list__pull-right,
+		.mf-list__pull-right .mf-icon {
+			top: 7px;
+		}
+		&.mf-list__element-left--large {
+			@include mf-inner-grid--left();
+		}
+		&.mf-list__element-left--large .mf-consumer-avatar {
+			display: none;
+		}
+		.mf-btn,
+		.mf-list__pull-right.mf-btn,
+		.mf-list__pull-right .mf-btn {
+			margin-top: 4px;
+		}
+		.mf-checkbox > label {
+			padding-bottom: 13px;
+			padding-top: 16px;
+		}
+	}
+	// Tweaks for Small size lists
+	&.mf-list__size--small .mf-list__item {
+		min-height: map-get($mf-list-sizes, small);
+		line-height: map-get($mf-list-sizes, small);
+
+		// Primary label first, followed by secondary line
+		&.mf-list--byline {
+			> .mf-list__element--primary {
+				margin-bottom: 3px;
+				padding-top: 6px;
+			}
+			> .mf-list__element--secondary {
+				margin-bottom: 8px;
+			}
+		}
+		// Secondary line first, followed by primary label
+		&.mf-list--byline-first {
+			> .mf-list__element--primary {
+				margin-bottom: 7px;
+				padding-top: 0;
+			}
+			> .mf-list__element--secondary {
+				padding-top: 7px;
+			}
+		}
+
+		.mf-list__element--primary {
+			margin-bottom: 18px;
+			padding-top: 17px;
+		}
+
+		.mf-consumer-avatar,
+		.mf-icon,
+		.mf-icon.mf-list__pull-right,
+		.mf-list__pull-right .mf-icon {
+			top: 11px;
+		}
+		&.mf-list__element-left--large {
+			@include mf-inner-grid--left();
+		}
+		&.mf-list__element-left--large .mf-consumer-avatar {
+			display: none;
+		}
+		.mf-btn,
+		.mf-list__pull-right.mf-btn,
+		.mf-list__pull-right .mf-btn {
+			margin-top: 8px;
+		}
+		.mf-checkbox > label {
+			padding-bottom: 17px;
+			padding-top: 20px;
+		}
+	}
+
+	// Medium sized lists are defined above since that's also the default size
+
+	// Tweaks for Large size lists
+	&.mf-list__size--large .mf-list__item {
+		min-height: map-get($mf-list-sizes, large);
+		line-height: map-get($mf-list-sizes, large);
+
+		// Primary label first, followed by secondary line
+		&.mf-list--byline {
+			> .mf-list__element--primary {
+				margin-bottom: 3px;
+				padding-top: 15px;
+			}
+			> .mf-list__element--secondary {
+				margin-bottom: 15px;
+			}
+		}
+		// Secondary line first, followed by primary label
+		&.mf-list--byline-first {
+			> .mf-list__element--primary {
+				margin-bottom: 16px;
+				padding-top: 0;
+			}
+			> .mf-list__element--secondary {
+				padding-top: 14px;
+			}
+		}
+
+		.mf-list__element--primary {
+			margin-bottom: 27px;
+			padding-top: 24px;
+		}
+
+		.mf-consumer-avatar,
+		.mf-icon,
+		.mf-icon.mf-list__pull-right,
+		.mf-list__pull-right .mf-icon {
+			top: 19px;
+		}
+		&.mf-list__element-left--large .mf-consumer-avatar {
+			top: 12px;
+		}
+		.mf-btn,
+		.mf-list__pull-right.mf-btn,
+		.mf-list__pull-right .mf-btn {
+			margin-top: 16px;
+		}
+		.mf-checkbox > label {
+			padding-bottom: 25px;
+			padding-top: 28px;
+		}
+	}
+	// Tweaks for Extra Large (XL) size lists
+	&.mf-list__size--xl .mf-list__item {
+		min-height: map-get($mf-list-sizes, xl);
+		line-height: map-get($mf-list-sizes, xl);
+
+		// Primary label first, followed by secondary line
+		&.mf-list--byline {
+			> .mf-list__element--primary {
+				margin-bottom: 3px;
+				padding-top: 19px;
+			}
+			> .mf-list__element--secondary {
+				margin-bottom: 19px;
+			}
+		}
+		// Secondary line first, followed by primary label
+		&.mf-list--byline-first {
+			> .mf-list__element--primary {
+				margin-bottom: 20px;
+				padding-top: 0;
+			}
+			> .mf-list__element--secondary {
+				padding-top: 18px;
+			}
+		}
+
+		.mf-list__element--primary {
+			margin-bottom: 31px;
+			padding-top: 28px;
+		}
+
+		.mf-consumer-avatar,
+		.mf-icon,
+		.mf-icon.mf-list__pull-right,
+		.mf-list__pull-right .mf-icon {
+			top: 23px;
+		}
+		&.mf-list__element-left--large .mf-consumer-avatar {
+			top: 16px;
+		}
+		.mf-btn,
+		.mf-list__pull-right.mf-btn,
+		.mf-list__pull-right .mf-btn {
+			margin-top: 20px;
+		}
+		.mf-checkbox > label {
+			padding-bottom: 29px;
+			padding-top: 32px;
+		}
+	}
+}

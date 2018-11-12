@@ -1,0 +1,13 @@
+{
+  "name": "115 S Hughes St",
+  "typeInfo": {
+    "displayName": "Test Portal",
+    "name": "TEST_PORTAL",
+    "id": 99999
+  },
+  "status": "IN_DEV",
+  "primaryUrl": "",
+  "credentialsType": "USER_PASS",
+  "securityQuestions": [],
+  "id": 773
+}

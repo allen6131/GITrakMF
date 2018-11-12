@@ -1,0 +1,46 @@
+{
+  "address": {
+    "address": "3024 New Bern Ave",
+    "city": "Raleigh",
+    "county": "Wake",
+    "state": "NC",
+    "zipcode": "27610"
+  },
+  "id": "AVh0JPsHxdCn8Jj8OI_c",
+  "location": {
+    "lat": "35.761642",
+    "lon": "-78.583786"
+  },
+  "office": {
+    "contacts": [
+      {
+        "type": "PHONE",
+        "value": "(919) 350-6484"
+      }
+    ],
+    "id": "f3ec30a8-f27d-4b8b-9839-7e24a2dc8a13",
+    "name": "Wakemed Facility Physicians Gastroenterology and Hepatology",
+    "source": "HEALTHGRADES",
+    "sourceId": "f3ec30a8-f27d-4b8b-9839-7e24a2dc8a13.hg",
+    "suite": "Fl 1",
+    "type": "OFFICE"
+  },
+  "practice": {
+    "id": "c6fc0c6e-2516-4021-9df7-f431c69c836e",
+    "name": "Wakemed Facility Physicians Gastroenterology and Hepatology",
+    "source": "HEALTHGRADES",
+    "sourceId": "c6fc0c6e-2516-4021-9df7-f431c69c836e.hg"
+  },
+  "provider": {
+    "degree": "MD",
+    "firstName": "Sharif",
+    "gender": "M",
+    "id": "ec3065e5-215a-446d-86d9-40c25949e8bc",
+    "lastName": "Chowdhury",
+    "middleName": "Riaz",
+    "npi": 1750348769,
+    "providerType": "DOC",
+    "source": "HEALTHGRADES",
+    "sourceId": "ec3065e5-215a-446d-86d9-40c25949e8bc.hg"
+  }
+}

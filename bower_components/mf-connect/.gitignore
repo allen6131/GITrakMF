@@ -1,0 +1,33 @@
+# http://git-scm.com/docs/gitignore
+
+# Directories are always defined from the root (they should always begin with a slash)
+# and usually end with a slash as well -- except for the ones which include a .gitkeep:
+# For those, we have to end with a * because we only want to ignore the things *within*
+# the directory (excluding .gitkeep) instead of the directory itself.
+
+/.idea/*
+
+/app-src/bower_components/*
+/public/fonts/*
+/build/*
+/lib/*
+/node/*
+/node_modules/*
+/share/*
+/target/*
+/coverage/*
+
+# Files which are ignored regardless of their directory
+
+*.log
+.DS_STORE
+.project
+
+!.gitkeep
+
+.classpath
+.com.apple.timemachine.supported
+.settings
+*.dia~
+*.iml
+*.log.[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]

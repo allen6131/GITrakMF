@@ -1,0 +1,28 @@
+@mixin mf-inner-grid {
+	padding-left: $mf-buffer__small;
+	padding-right: $mf-buffer__small;
+
+	@media (min-width: map-get($mf-breakpoints, medium)) {
+		padding-left: $mf-buffer__medium;
+		padding-right: $mf-buffer__medium;
+	}
+}
+.mf-inner-grid {
+	@include mf-inner-grid();
+}
+
+@mixin mf-inner-grid--left {
+	padding-left: $mf-buffer__small;
+
+	@media (min-width: map-get($mf-breakpoints, medium)) {
+		padding-left: $mf-buffer__medium;
+	}
+}
+
+@mixin mf-inner-grid--right {
+	padding-right: $mf-buffer__small;
+
+	@media (min-width: map-get($mf-breakpoints, medium)) {
+		padding-right: $mf-buffer__medium;
+	}
+}

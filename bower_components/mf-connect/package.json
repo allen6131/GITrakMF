@@ -1,0 +1,66 @@
+{
+  "name": "medfusion-connect",
+  "version": "1.4.0",
+  "private": true,
+  "author": {
+    "name": "Medfusion"
+  },
+  "description": "Medfusion Connect",
+  "repository": {
+    "type": "git"
+  },
+  "engines": {
+    "node": "5.9.1",
+    "npm": "3.10.5"
+  },
+  "devDependencies": {
+    "bluebird": "^3.4.7",
+    "bootstrap": "^3.3.7",
+    "bootstrap-sass": "^3.3.7",
+    "bower": "^1.8.0",
+    "browser-sync": "2.14.0",
+    "browserify": "13.1.1",
+    "browserify-istanbul": "^2.0.0",
+    "browserify-shim": "^3.8.12",
+    "chai": "^3.5.0",
+    "del": "^2.2.2",
+    "glob": "^7.1.1",
+    "gulp": "^3.9.1",
+    "gulp-browserify": "^0.5.1",
+    "gulp-clean-css": "^2.3.0",
+    "gulp-jshint": "^2.0.4",
+    "gulp-less": "^3.3.0",
+    "gulp-load-plugins": "^1.4.0",
+    "gulp-mocha-phantomjs": "^0.12.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.0.0",
+    "gulp-uglify": "^2.0.0",
+    "gulp-util": "^3.0.8",
+    "istanbul": "^0.4.5",
+    "jasmine": "^2.5.3",
+    "jasmine-core": "^2.5.2",
+    "jasmine-node-karma": "^1.6.1",
+    "jquery": "^3.1.1",
+    "jshint": "^2.9.4",
+    "karma": "^1.5.0",
+    "karma-browserify": "^5.1.1",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-commonjs": "^1.0.0",
+    "karma-coverage": "^1.1.1",
+    "karma-jasmine": "^1.1.0",
+    "karma-phantomjs-launcher": "^1.0.2",
+    "lodash": "^4.17.4",
+    "minify": "^2.0.13",
+    "mocha": "^3.2.0",
+    "through2": "^2.0.3",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "vinyl-transform": "^1.0.0",
+    "watchify": "^3.9.0",
+    "wiredep": "^4.0.0"
+  },
+  "scripts": {
+    "test": "karma start karma.conf.js",
+    "build-js": "browserify app-src/js/main.js > public/js/mf-connect.js && gulp build"
+  }
+}
