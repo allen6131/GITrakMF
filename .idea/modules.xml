@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/GITrakMF.iml" filepath="$PROJECT_DIR$/.idea/GITrakMF.iml" />
       <module fileurl="file://$PROJECT_DIR$/GITrakMF.iml" filepath="$PROJECT_DIR$/GITrakMF.iml" />
     </modules>
   </component>
