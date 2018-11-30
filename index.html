@@ -9,7 +9,7 @@
 </head>
 <body>
 <p class="mf-connect">
-  <button onclick="MfConnect.prototype.launch(configuration);" id="mfConnectBtn" class="button mf-cta__primary mf-connect-btn" type="button">
+  <button onclick="openConnect()" id="mfConnectBtn" class="button mf-cta__primary mf-connect-btn" type="button">
     <span class="mf-icon mf-icon__medfusion-twirl mf-color__inverse"></span>
     Import Health Records
   </button>
@@ -17,6 +17,10 @@
 
 
 <script>
+
+  function openConnect() {
+    MfConnect.prototype.launch(configuration);
+  }
   var MfConnect = window.MfConnect;
 
   var configuration = {
