@@ -1,0 +1,30 @@
+{
+  "id": "AVpxSL3cDQmTDT9L5u6Y",
+  "office": {
+    "type": "OFFICE",
+    "id": "7d0c3327-6ae0-4024-860f-1931041ca0dc",
+    "source": "MEDFUSION",
+    "name": "Test",
+    "suite": "100",
+    "contacts": [
+      {
+        "value": "123-456-7890",
+        "type": "PHONE"
+      }
+    ],
+    "sourceId": "7d0c3327-6ae0-4024-860f-1931041ca0dc.mf"
+  },
+  "address": {
+    "address": "5501 Dillard Drive",
+    "city": "CARY",
+    "state": "NC",
+    "zipcode": "27518",
+    "latitude": 35.73379,
+    "longitude": -78.77135
+  },
+  "location": {
+    "lat": "35.73379",
+    "lon": "-78.77135"
+  }
+}
+

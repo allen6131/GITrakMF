@@ -1,0 +1,9 @@
+{
+  "name": "gitrakmf",
+  "version": "0.0.1",
+  "dependencies": {
+    "mf-connect": "https://bitbucket.org/mfgit/mf-connect.git#1.4.0"
+  },
+  "private": true
+}
+

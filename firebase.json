@@ -1,6 +1,13 @@
 {
   "hosting": {
     "public": "public",
+    "headers": [ {
+        "source" : "**",
+        "headers" : [ {
+          "key" : "Access-Control-Allow-Origin",
+          "value" : "*"
+        } ]
+    } ],
     "ignore": [
       "firebase.json",
       "**/.*",

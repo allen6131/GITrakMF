@@ -1,0 +1,25 @@
+{
+  "address": {
+    "city": "Raleigh",
+    "state": "NC",
+    "zipcode": "27603"
+  },
+  "id": "AVhz4RCbxdCn8Jj8FJxV",
+  "location": {
+    "lat": "35.68368",
+    "lon": "-78.66415"
+  },
+  "office": {
+    "contacts": [
+      {
+        "type": "PHONE",
+        "value": "419-345-7402"
+      }
+    ],
+    "id": "7a36a769-38eb-42e5-8afc-8e3a99924f02",
+    "name": "Kelsey's Amazing Test Portal",
+    "source": "MEDFUSION",
+    "sourceId": "7a36a769-38eb-42e5-8afc-8e3a99924f02.mf",
+    "type": "OFFICE"
+  }
+}

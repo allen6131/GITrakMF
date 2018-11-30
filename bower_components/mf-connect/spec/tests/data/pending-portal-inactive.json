@@ -1,0 +1,13 @@
+{
+  "name": "115 S Hughes St",
+  "typeInfo": {
+    "displayName": "Test Portal",
+    "name": "PLACEHOLDER_PORTAL",
+    "id": 99999
+  },
+  "status": "INACTIVE",
+  "primaryUrl": "",
+  "credentialsType": "USER_PASS",
+  "securityQuestions": [],
+  "id": 773
+}

@@ -1,0 +1,24 @@
+p {
+	@include mf-font-preset(normal-breathable);
+	@include mf-inner-grid();
+	margin-bottom: $mf-buffer__large;
+
+	& + p {
+		margin-top: -12px;
+	}
+
+	a {
+		text-decoration: underline;
+	}
+}
+
+@media (min-width: map-get($mf-breakpoints, medium)) {
+  p {
+    @include mf-inner-grid();
+	margin-bottom: $mf-buffer__xl;
+
+	& + p {
+		margin-top: -20px;
+	}
+  }
+}

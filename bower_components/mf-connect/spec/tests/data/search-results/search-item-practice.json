@@ -1,0 +1,39 @@
+    {
+
+        "address": {
+            "address": "4201 Lake Boone Trl",
+            "city": "Raleigh",
+            "county": "Wake",
+            "state": "NC",
+            "zipcode": "27607"
+        },
+        "id": "AVhz3LE4xdCn8Jj8Cv6A",
+        "location": {
+            "lat": "35.80402",
+            "lon": "-78.697655"
+        },
+        "office": {
+            "contacts": [
+                {
+                    "type": "FAX",
+                    "value": "(919) 301-0786"
+                },
+                {
+                    "type": "PHONE",
+                    "value": "(919) 659-8436"
+                }
+            ],
+            "id": "c05506ec-96a7-4295-94ab-7af1d5d28837",
+            "name": "Raleigh Office",
+            "source": "HEALTHGRADES",
+            "sourceId": "c05506ec-96a7-4295-94ab-7af1d5d28837.hg",
+            "suite": "Ste 205",
+            "type": "OFFICE"
+        },
+        "practice": {
+            "id": "4733eec8-b564-42b7-a038-e9e3992707a4",
+            "name": "Raleigh Office",
+            "source": "HEALTHGRADES",
+            "sourceId": "4733eec8-b564-42b7-a038-e9e3992707a4.hg"
+        }
+    }

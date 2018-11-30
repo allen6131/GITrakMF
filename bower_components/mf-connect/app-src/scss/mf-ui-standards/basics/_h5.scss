@@ -1,0 +1,11 @@
+h5, .h5 {
+    margin-left: $mf-buffer__small;
+    margin-right: $mf-buffer__small;
+}
+@media (min-width: map-get($mf-breakpoints, medium)) {
+    h5, .h5 {
+        margin-left: $mf-buffer__medium;
+        margin-right: $mf-buffer__medium;
+    }
+}
+

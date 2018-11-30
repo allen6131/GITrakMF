@@ -1,0 +1,7 @@
+@mixin mf-focus($color: $mf-color__focus) {
+	border: 1px solid $color;
+	-webkit-box-shadow: 0px 0px 5px 1px $color;
+	-moz-box-shadow: 0px 0px 5px 1px $color;
+	box-shadow: 0px 0px 5px 1px $color;
+	outline: none;
+}

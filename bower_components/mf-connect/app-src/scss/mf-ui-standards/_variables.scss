@@ -1,0 +1,278 @@
+//== Encode icons in base64?
+//
+//## Set this to true for iOS builds, otherwise leave false
+
+$mf-icons__base64: false !default;
+
+
+
+
+//== Media queries breakpoints
+//
+//## Define the breakpoints at which your layout will change, adapting to different screen sizes.
+
+$mf-breakpoints: (
+  xs    : 320px,
+  small : 480px,
+  medium  : 960px,
+  large : 1432px,
+  xl    : 1912px
+);
+
+
+
+
+//== Common spacing numbers
+//
+//## For use between (and sometimes within) elements on the page
+$mf-buffer:               8px !default; // Don't use this in your code directly, use the following instead:
+
+$mf-buffer__2xs:            ceil(($mf-buffer / 4)) !default;  // 2px
+$mf-buffer__xs:             ceil(($mf-buffer / 2)) !default;  // 4px
+$mf-buffer__small:            $mf-buffer !default;        // 8px
+$mf-buffer__medium:           ceil(($mf-buffer * 2)) !default;  // 16px
+$mf-buffer__large:            ceil(($mf-buffer * 3)) !default;  // 24px
+$mf-buffer__xl:             ceil(($mf-buffer * 4)) !default;  // 32px
+$mf-buffer__2xl:            ceil(($mf-buffer * 6)) !default;  // 48px
+$mf-buffer__3xl:            ceil(($mf-buffer * 8)) !default;  // 64px
+$mf-buffer__4xl:            ceil(($mf-buffer * 9)) !default;  // 72px
+$mf-buffer__5xl:            ceil(($mf-buffer * 12)) !default;   // 96px
+
+//== Spacing variables for specific situations
+$mf-buffer__molecule--after:      $mf-buffer__xl !default;  // 32px
+$mf-buffer__section--after:       $mf-buffer__xl !default;  // 32px
+$mf-size__avatar:           $mf-buffer__2xl !default; // 48px
+$mf-size__avatar--large:        $mf-buffer__5xl !default; // 96px
+$mf-size__body-top:           $mf-buffer__large !default; // 24px
+$mf-size__body-top--large:        $mf-buffer__xl !default;  // 32px
+$mf-size__icon:             $mf-buffer__xl !default;  // 32px
+$mf-size__icon--large:          $mf-buffer__2xl !default;   // 48px
+$mf-size__min-body-height:        ceil(($mf-buffer * 62)) !default; // 496px
+$mf-size__navbar-height:        $mf-buffer__2xl + $mf-buffer__small !default; // 56px
+$mf-size__navbar-height--large:     $mf-buffer__3xl !default;   // 64px
+$mf-size__rounded-corner:       $mf-buffer__xs !default;  // 4px
+$mf-size__rounded-corner--cta:      $mf-buffer__5xl !default; // 96px
+$mf-size__spot-illustration:      $mf-buffer__5xl !default;   // 96px
+$mf-size__tab-height:         $mf-buffer__3xl !default;   // 64px
+
+
+
+
+//== Colors
+//
+//## Font, background and other element colors
+
+//== Common interface colors
+$mf-color__gray--accessible:      #767676 !default; // Lightest color gray we can use for text or
+                              // any other any other elements that are critical to the use of the
+                              // product. Lighter than this fails contrast legibility requirements
+                              // for those with certain visual impairments.
+$mf-color__gray--lightest:        #fcfcfc !default;
+$mf-color__gray:            #eeeeee !default;
+$mf-color__gray--dark:          #dddddd !default;
+$mf-color__gray--darker:        #cccccc !default;
+$mf-color__negative:          #d0021b !default;
+$mf-color__positive:          #508f0c !default;
+
+$mf-color__action:            #235ba8 !default;
+$mf-color__action--active:        darken($mf-color__action, 15%) !default;
+$mf-color__action--disabled:      $mf-color__gray--dark !default;
+$mf-color__action--hover:       darken($mf-color__action, 10%) !default;
+
+
+//== Font colors
+$mf-color__text:            #4a4a4a !default; // Our main font color
+$mf-color__text--light:         $mf-color__gray--accessible !default;
+$mf-color__text--link:          $mf-color__action !default;
+$mf-color__text--negative:        $mf-color__negative !default; // For errors, negative chart values, etc
+$mf-color__text--positive:        $mf-color__positive !default; // For positive chart values, etc
+
+//== Color variables for specific situations
+$mf-color__border:            $mf-color__gray !default; // All borders use this color
+$mf-color__border--inputs:        #b3b3b3 !default; // Borders for text fields and the like
+$mf-color__border--section:       $mf-color__gray--darker !default; // All section-dividing borders use this color
+$mf-color__bg:              #ffffff !default; // Page background color
+$mf-color__shadow:            rgba(0,0,0,.02) !default; // Shadow color
+$mf-color__bg-gradient--start:      $mf-color__gray--lightest !default;
+$mf-color__bg-gradient--end:      $mf-color__bg !default;
+$mf-color__focus:           #21A4FB !default;
+$mf-color__push-menu-bg:        #222222 !default;
+$mf-color__push-menu-bg--active:    #000000 !default;
+
+//== Medfusion primary product colors
+$mf-product-color__medfusion:     #235ba8 !default;
+$mf-product-color__pay:         #a1d884 !default;
+$mf-product-color__plus:        #6569a2 !default;
+$mf-product-color__portal:        #ffc700 !default;
+
+//== Medfusion accent product colors
+$mf-product-color__plus--accent-1:    #6667a4 !default;
+$mf-product-color__plus--accent-2:    #7ecbef !default;
+$mf-product-color__plus--accent-3:    #bde5f6 !default;
+
+//== Whitelabel / branding color adjustments
+$mf-color__brand:           $mf-product-color__medfusion !default;
+$mf-color__brand--light:        lighten($mf-color__brand, 5%) !default;
+$mf-color__brand--dark:         darken($mf-color__brand, 5%) !default;
+$mf-color__brand--darker:       darken($mf-color__brand, 10%) !default;
+
+$mf-color__brand--secondary:      #7a7d81 !default;
+
+//== Inverted colors (these are lightened versions for when we're placing them on a dark background)
+$mf-color__action--inverse:       #7AC7E0 !default;
+$mf-color__action--disabled--inverse: #4d4d4d !default;
+$mf-color__gray--accessible--inverse: #bcbcbc !default;
+$mf-color__negative--inverse:     #FD9F9F !default;
+$mf-color__positive--inverse:     #99CC33 !default;
+
+$mf-color__text--inverse:       #ffffff !default;
+$mf-color__text--light--inverse:    $mf-color__gray--accessible--inverse !default;
+$mf-color__text--link--inverse:     $mf-color__action--inverse !default;
+$mf-color__text--negative--inverse:   $mf-color__negative--inverse !default;
+$mf-color__text--positive--inverse:   $mf-color__positive--inverse !default;
+
+//== Avatar / profile colors
+$mf-avatarcolors:           #4c8ecd
+                    #00a9e1
+                    #8b6fbd
+                    #b160b2
+                    #ff5187
+                    #e95151
+                    #f27a33
+                    #f6bb33
+                    #9acc00
+                    #26b245
+                    !default
+                    ;
+
+//== Common color presets for use in icons, fonts, etc
+$mf-color-presets: (
+  default         : $mf-color__text,
+  action          : $mf-color__action,
+  brand         : $mf-color__brand,
+  dim           : $mf-color__gray--accessible,
+  disabled        : $mf-color__action--disabled,
+  negative        : $mf-color__negative,
+  positive        : $mf-color__positive,
+
+  inverse         : $mf-color__text--inverse,
+  action--inverse     : $mf-color__action--inverse,
+  dim--inverse      : $mf-color__gray--accessible--inverse,
+  disabled--inverse   : $mf-color__action--disabled--inverse,
+  negative--inverse   : $mf-color__negative--inverse,
+  positive--inverse   : $mf-color__positive--inverse
+);
+
+
+
+
+//== Typography
+//
+//## Font, line-height, and color for body text, headings, and more.
+$mf-font__file-location:  "../fonts" !default; // No trailing slash
+$mf-font__family:     "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !default;
+
+//== Set up font size variables for use in our CSS
+$mf-font-size__base:    16px !default;
+
+$mf-font-size__xs:      floor(($mf-font-size__base * 0.750)) !default;  // 12px
+$mf-font-size__small:   floor(($mf-font-size__base * 0.875)) !default;  // 14px
+$mf-font-size__normal:    $mf-font-size__base !default;           // 16px
+$mf-font-size__large:   floor(($mf-font-size__base * 1.125)) !default;  // 18px
+$mf-font-size__xl:      floor(($mf-font-size__base * 1.375)) !default;  // 22px
+$mf-font-size__2xl:     floor(($mf-font-size__base * 1.625)) !default;  // 26px
+$mf-font-size__3xl:     floor(($mf-font-size__base * 1.875)) !default;  // 30px
+$mf-font-size__4xl:     floor(($mf-font-size__base * 2.625)) !default;  // 42px
+
+//== Font sizes
+$mf-font-sizes: (
+  xs            : $mf-font-size__xs,  // 12px / 16
+  xs-breathable     : $mf-font-size__xs,  // 12px / 19
+
+  small         : $mf-font-size__small, // 14px / 18
+  small-breathable    : $mf-font-size__small, // 14px / 21
+
+  normal          : $mf-font-size__base,  // 16px / 20
+  normal-breathable   : $mf-font-size__base,  // 16px / 23
+
+  large         : $mf-font-size__large, // 18px / 22
+  large-breathable    : $mf-font-size__large, // 18px / 25
+
+  xl            : $mf-font-size__xl,  // 22px / 26
+  2xl           : $mf-font-size__2xl,   // 26px / 30
+  3xl           : $mf-font-size__3xl, // 30px / 34
+  4xl           : $mf-font-size__4xl    // 42px / 46
+);
+
+$mf-font-leadings: (
+  xs            : 1.333,  // 12px / 16
+  xs-breathable     : 1.583,  // 12px / 19
+
+  small         : 1.286,  // 14px / 18
+  small--breathable   : 1.500,  // 14px / 21
+
+  normal          : 1.250,  // 16px / 20
+  normal--breathable    : 1.438,  // 16px / 23
+
+  large         : 1.222,  // 18px / 22
+  large--breathable   : 1.389,  // 18px / 25
+
+  xl            : 1.182,  // 22px / 26
+  2xl           : 1.154,  // 26px / 30
+  3xl           : 1.133,  // 30px / 34
+  4xl           : 1.095   // 42px / 46
+);
+
+
+
+// Accepts null, 'xs', 'small', `normal`, `large`, 'xl', '2xl', 3xl', or '4xl'
+// Also accepts 'small-breathable', 'normal-breathable', and 'large-breathable' for use in extended body
+// copy like paragraphs. These have greater line-spacing for easier legibility of long-form content.
+@mixin mf-font-preset($size-name:"normal", $color:"default") {
+  color:      map-get($mf-color-presets, $color);
+  font-size:    map-get($mf-font-sizes, $size-name);
+  line-height:  map-get($mf-font-leadings, $size-name);
+}
+
+// FOR YOUR COPY/PASTING ENJOYMENT:
+
+// @include mf-font-preset(xs);
+// @include mf-font-preset(small);
+// @include mf-font-preset();
+// @include mf-font-preset(normal);
+// @include mf-font-preset(large);
+// @include mf-font-preset(xl);
+// @include mf-font-preset(2xl);
+// @include mf-font-preset(3xl);
+// @include mf-font-preset(4xl);
+// @include mf-font-preset(small-breathable);
+// @include mf-font-preset(normal-breathable);
+// @include mf-font-preset(large-breathable);
+
+
+
+//== Lists
+//
+//## Standardize our list heights
+
+$mf-list-sizes: (
+  xs            : 48px,
+  small         : 56px,
+  medium          : 64px,
+  large         : 72px,
+  xl            : 80px
+);
+
+
+
+//== Tables
+//
+//## Standardize our table row heights
+
+$mf-table-sizes: (
+  xs            : 48px,
+  small         : 56px,
+  medium          : 64px,
+  large         : 72px,
+  xl            : 80px
+);

@@ -1,0 +1,117 @@
+{
+  "id": "2d965876-6ee2-494a-ba24-7439b698f46e",
+  "source": "HEALTHGRADES",
+  "firstName": "Andrea",
+  "lastName": "Goodrich",
+  "middleName": "Louise",
+  "gender": "F",
+  "degree": "MD",
+  "npi": 1780828970,
+  "providerType": "DOC",
+  "offices": [
+    {
+      "type": "OFFICE",
+      "id": "3d4523f9-dd8e-4a5c-be4d-d1a67c956b3b",
+      "source": "HEALTHGRADES",
+      "address": {
+        "address": "DUMC 3094",
+        "city": "Durham",
+        "state": "NC",
+        "zipcode": "27710",
+        "latitude": 36.00625,
+        "longitude": -78.9407
+      },
+      "type": "OFFICE",
+      "sourceId": "3d4523f9-dd8e-4a5c-be4d-d1a67c956b3b.hg"
+    },
+    {
+      "type": "OFFICE",
+      "id": "fa13a38d-22a5-4370-b724-d055a8ea0626",
+      "source": "HEALTHGRADES",
+      "name": "DUKE UNIVERSITY",
+      "suite": "# 3094",
+      "address": {
+        "address": "2301 Erwin Rd",
+        "city": "Durham",
+        "state": "NC",
+        "zipcode": "27705",
+        "latitude": 36.00832,
+        "longitude": -78.93889
+      },
+      "contacts": [
+        {
+          "value": "(919) 684-0862",
+          "type": "FAX"
+        },
+        {
+          "value": "(919) 668-2081",
+          "type": "FAX"
+        },
+        {
+          "value": "(919) 681-7893",
+          "type": "FAX"
+        },
+        {
+          "value": "(919) 970-0156",
+          "type": "PHONE"
+        },
+        {
+          "value": "(919) 970-8396",
+          "type": "PHONE"
+        },
+        {
+          "value": "(919) 684-0862",
+          "type": "PHONE"
+        }
+      ],
+      "type": "OFFICE",
+      "sourceId": "fa13a38d-22a5-4370-b724-d055a8ea0626.hg"
+    },
+    {
+      "type": "OFFICE",
+      "id": "2f12e40b-c6e5-4afa-b375-7922a47690c0",
+      "source": "HEALTHGRADES",
+      "address": {
+        "address": "DUMC 3094",
+        "city": "Durham",
+        "state": "NC",
+        "zipcode": "27710",
+        "latitude": 36.001766,
+        "longitude": -78.94073
+      },
+      "contacts": [
+        {
+          "value": "(919) 681-8357",
+          "type": "FAX"
+        },
+        {
+          "value": "(919) 681-3551",
+          "type": "PHONE"
+        },
+        {
+          "value": "(919) 681-6437",
+          "type": "PHONE"
+        },
+        {
+          "value": "(314) 740-6140",
+          "type": "PHONE"
+        },
+        {
+          "value": "(919) 681-2924",
+          "type": "PHONE"
+        },
+        {
+          "value": "(919) 681-4698",
+          "type": "FAX"
+        },
+        {
+          "value": "(919) 684-8111",
+          "type": "PHONE"
+        }
+      ],
+      "type": "OFFICE",
+      "sourceId": "2f12e40b-c6e5-4afa-b375-7922a47690c0.hg"
+    }
+  ],
+  "sourceId": "2d965876-6ee2-494a-ba24-7439b698f46e.hg"
+}
