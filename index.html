@@ -5,21 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>GITRAK</title>
 
+  <!--MF Connect CSS-->
   <link rel="stylesheet" href="/bower_components/mf-connect/public/styles/mf-connect.css" />
 
+  <!--Bootstrap 4 CSS-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <!--Bootstrap 4 JS-->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+  <!--MF Connect JS-->
   <script src="bower_components/mf-connect/public/js/mf-connect.min.js"></script>
 
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
 </head>
-<body>
-<p class="mf-connect" style="margin-top: 100;">
+<body class="bg">
+<p class="mf-connect container">
+<div class="row align-items-center">
   <button onclick="openConnect()" id="mfConnectBtn" class="button mf-cta__primary mf-connect-btn" type="button">
     <span class="mf-icon mf-icon__medfusion-twirl mf-color__inverse"></span>
     Import Health Records
   </button>
 </p>
+</div>
 
-
+<style>
+  .bg {
+    background-image: url("img/img.png");
+    background-color: #2E3E80;
+  }
+</style>
 <script>
+
+
 
 
 
@@ -31,14 +55,14 @@
 
   var MfConnect = window.MfConnect;
 
-  // var configuration = {
-  //   customerUuid: '43b4790c-1ee3-426d-9561-d8e0c72340df', // required
-  //   userUuid: "1a7b9790-012e-429d-981d-ed3e397c7736", // required
-  //   accessToken: "eyJhbGciOiJIUzI1NiJ9.eyJjdXN0b21lclV1aWQiOiI0M2I0NzkwYy0xZWUzLTQyNmQtOTU2MS1kOGUwYzcyMzQwZGYiLCJ1c2VyVXVpZCI6IjFhN2I5NzkwLTAxMmUtNDI5ZC05ODFkLWVkM2UzOTdjNzczNiIsInR5cGUiOiJjb20ubWVkZnVzaW9uLm1mc3MuYXV0aGVudGljYXRpb24uand0LkFwaUN1c3RvbWVyVXNlckp3dFRva2VuIiwiZXhwIjoxNTQzODcwNTU2LCJhdXRoSWQiOiJmY2YyNWVkYTVmNGI0MzVjOGI5ZWFiYWU5MjNjNDlkYiJ9.lsRBP_48cq8Jtb_kI8EDm39zV64_K1GFuK9GVzUUgGI",
-  //   url: 'https://apisandbox.medfusion.net', // required
-  //   apiKey: 'm1sLTGGdp97VTG5whL9LQ9SCJ58dyr9J2RfHYfSt', // required
-  //   // onEvent: yourOnEventHandler // optional
-  // }
+  var configuration = {
+    customerUuid: '43b4790c-1ee3-426d-9561-d8e0c72340df', // required
+    userUuid: "1a7b9790-012e-429d-981d-ed3e397c7736", // required
+    accessToken: "eyJhbGciOiJIUzI1NiJ9.eyJjdXN0b21lclV1aWQiOiI0M2I0NzkwYy0xZWUzLTQyNmQtOTU2MS1kOGUwYzcyMzQwZGYiLCJ1c2VyVXVpZCI6IjFhN2I5NzkwLTAxMmUtNDI5ZC05ODFkLWVkM2UzOTdjNzczNiIsInR5cGUiOiJjb20ubWVkZnVzaW9uLm1mc3MuYXV0aGVudGljYXRpb24uand0LkFwaUN1c3RvbWVyVXNlckp3dFRva2VuIiwiZXhwIjoxNTQzOTY4NDA0LCJhdXRoSWQiOiJmY2YyNWVkYTVmNGI0MzVjOGI5ZWFiYWU5MjNjNDlkYiJ9.a2NnEKpWJpppprZ4P8ZwFPe7Kd1OxUhrG2M0FiZiQfw",
+    url: 'https://apisandbox.medfusion.net', // required
+    apiKey: 'm1sLTGGdp97VTG5whL9LQ9SCJ58dyr9J2RfHYfSt', // required
+    // onEvent: yourOnEventHandler // optional
+  }
 
   //Not needed since this is coming from the react native app
 
