@@ -9439,6 +9439,7 @@ button.close {
   position: relative;
   margin-left: 25px;
   margin-right: 25px;
+  width: auto;
 }
   .mf-connect-btn .mf-icon {
     position: absolute;
