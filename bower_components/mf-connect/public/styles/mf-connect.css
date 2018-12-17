@@ -9293,6 +9293,7 @@ button.close {
   .mf-modal .modal-content {
     border-radius: 4px;
     -webkit-box-shadow: none;
+    margin-top: 100px;
     box-shadow: none; }
     .mf-modal .modal-content .modal-header {
       padding-left: 8px;
