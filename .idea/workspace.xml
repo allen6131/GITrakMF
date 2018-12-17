@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="646ec981-c056-46c7-a8e1-2aa65eb18acd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css" beforeDir="false" afterPath="$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -48,14 +48,14 @@
         <counts>
           <entry key="css" value="29" />
           <entry key="htaccess " value="7" />
-          <entry key="html" value="549" />
+          <entry key="html" value="550" />
           <entry key="json" value="20" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CSS" value="29" />
-          <entry key="HTML" value="549" />
+          <entry key="HTML" value="550" />
           <entry key="JSON" value="20" />
           <entry key="PLAIN_TEXT" value="7" />
         </counts>
@@ -64,19 +64,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="672">
-              <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+            <state relative-caret-position="271">
+              <caret line="28" column="2" selection-start-line="28" selection-start-column="2" selection-end-line="33" selection-end-column="8" />
               <folding>
-                <marker date="1545069498796" expanded="true" signature="512:523" ph="..." />
+                <marker date="1545070868299" expanded="true" signature="512:523" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="250">
@@ -86,6 +86,11 @@
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>.mf-connect-btn</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -97,8 +102,8 @@
         <option value="$PROJECT_DIR$/src/index.html" />
         <option value="$PROJECT_DIR$/public/index.html" />
         <option value="$PROJECT_DIR$/.htaccess " />
-        <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css" />
+        <option value="$PROJECT_DIR$/index.html" />
       </list>
     </option>
   </component>
@@ -204,12 +209,12 @@
       <workItem from="1543765165672" duration="25000" />
       <workItem from="1543765256252" duration="3301000" />
       <workItem from="1543961321782" duration="204000" />
-      <workItem from="1545068637691" duration="1449000" />
+      <workItem from="1545068637691" duration="1562000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12579000" />
+    <option name="totallyTimeSpent" value="12692000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="0" />
@@ -268,20 +273,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="672">
-          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
-          <folding>
-            <marker date="1545069498796" expanded="true" signature="512:523" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="250">
           <caret line="9435" column="14" selection-start-line="9435" selection-start-column="14" selection-end-line="9435" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="271">
+          <caret line="28" column="2" selection-start-line="28" selection-start-column="2" selection-end-line="33" selection-end-column="8" />
+          <folding>
+            <marker date="1545070868299" expanded="true" signature="512:523" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
