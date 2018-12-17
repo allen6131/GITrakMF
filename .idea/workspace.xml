@@ -77,8 +77,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="545">
-              <caret line="5890" column="27" selection-start-line="5890" selection-start-column="27" selection-end-line="5890" selection-end-column="27" />
+            <state relative-caret-position="251">
+              <caret line="5885" column="27" selection-start-line="5885" selection-start-column="27" selection-end-line="5885" selection-end-column="27" />
             </state>
           </provider>
         </entry>
@@ -202,18 +202,18 @@
       <workItem from="1543765165672" duration="25000" />
       <workItem from="1543765256252" duration="3301000" />
       <workItem from="1543961321782" duration="204000" />
-      <workItem from="1545068637691" duration="1007000" />
+      <workItem from="1545068637691" duration="1179000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12137000" />
+    <option name="totallyTimeSpent" value="12309000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.27682403" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.27682403" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Gulp" order="2" side_tool="true" />
       <window_info id="npm" order="3" side_tool="true" />
@@ -231,7 +231,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="9" visible="true" weight="0.29847908" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.29847908" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -278,8 +278,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="545">
-          <caret line="5890" column="27" selection-start-line="5890" selection-start-column="27" selection-end-line="5890" selection-end-column="27" />
+        <state relative-caret-position="251">
+          <caret line="5885" column="27" selection-start-line="5885" selection-start-column="27" selection-end-line="5885" selection-end-column="27" />
         </state>
       </provider>
     </entry>

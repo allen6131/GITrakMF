@@ -5882,13 +5882,13 @@ button.close {
 
 .mf-cta__primary:hover, .mf-cta__primary--optional:hover, .mf-cta__secondary:hover, .mf-btn:hover {
   color: #ffffff;
-  background: #6EB0E7;
-  border: 1px solid #6EB0E7; }
+  background: #53749f;
+  border: 1px solid #53749f; }
 
 .mf-cta__primary:active, .mf-cta__primary--optional:active, .mf-cta__secondary:active, .mf-btn:active {
   color: #ffffff;
-  background: #6EB0E7;
-  border: 1px solid #6EB0E7; }
+  background: #53749f;
+  border: 1px solid #53749f; }
 
 .mf-loading.mf-cta__primary:disabled, .mf-loading.mf-cta__primary--optional:disabled, .mf-loading.mf-cta__secondary:disabled, .mf-loading.mf-btn:disabled, .mf-loading.mf-cta__primary, .mf-loading.mf-cta__primary--optional, .mf-loading.mf-cta__secondary, .mf-loading.mf-btn {
   color: #ffffff;
@@ -5912,8 +5912,8 @@ button.close {
 
 /* Call To Action buttons */
 .mf-cta__primary {
-  background: #235ba8;
-  border: 1px solid #235ba8;
+  background: #53749f;
+  border: 1px solid #53749f;
   color: #ffffff;
   -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
