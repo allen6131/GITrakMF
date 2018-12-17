@@ -9433,10 +9433,13 @@ button.close {
     display: inline-block; }
 
 .mf-connect-btn {
-  width: 275px;
+  width: 100%;
   padding-left: 64px;
   text-align: left;
-  position: relative; }
+  position: relative;
+  margin-left: 25px;
+  margin-right: 25px;
+}
   .mf-connect-btn .mf-icon {
     position: absolute;
     top: 8px;
