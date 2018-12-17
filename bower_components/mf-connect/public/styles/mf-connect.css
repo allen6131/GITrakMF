@@ -9433,7 +9433,7 @@ button.close {
     display: inline-block; }
 
 .mf-connect-btn {
-  width: 100%;
+  max-width: 100%;
   padding-left: 64px;
   text-align: left;
   position: relative;
