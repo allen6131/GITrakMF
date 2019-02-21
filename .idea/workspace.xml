@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="646ec981-c056-46c7-a8e1-2aa65eb18acd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css" beforeDir="false" afterPath="$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,14 +15,14 @@
     <session id="249271341">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="10" />
+          <entry key="project.closed" value="13" />
           <entry key="project.open.time.0" value="5" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.4" value="1" />
           <entry key="project.open.time.5" value="2" />
-          <entry key="project.open.time.6" value="1" />
-          <entry key="project.open.time.8" value="1" />
-          <entry key="project.opened" value="11" />
+          <entry key="project.open.time.6" value="2" />
+          <entry key="project.open.time.8" value="2" />
+          <entry key="project.opened" value="13" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -67,8 +67,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-139">
-              <caret line="1" column="6" lean-forward="true" selection-start-line="1" selection-start-column="6" selection-end-line="1" selection-end-column="6" />
+            <state relative-caret-position="23">
+              <caret line="1" column="6" selection-start-line="1" selection-start-column="6" selection-end-line="1" selection-end-column="6" />
               <folding>
                 <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
@@ -79,8 +79,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="9295" column="22" selection-start-line="9295" selection-start-column="22" selection-end-line="9295" selection-end-column="22" />
+            <state relative-caret-position="2577">
+              <caret line="9301" column="26" selection-start-line="9301" selection-start-column="26" selection-end-line="9301" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -129,6 +129,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -166,7 +167,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="PackagesPane" />
     </panes>
   </component>
@@ -177,6 +177,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -210,16 +211,17 @@
       <workItem from="1543765256252" duration="3301000" />
       <workItem from="1543961321782" duration="204000" />
       <workItem from="1545068637691" duration="2677000" />
-      <workItem from="1545072329949" duration="1594000" />
+      <workItem from="1545072329949" duration="2475000" />
+      <workItem from="1545154897677" duration="58000" />
+      <workItem from="1545154994094" duration="23000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="15401000" />
+    <option name="totallyTimeSpent" value="16363000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2764613" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -239,7 +241,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.2980198" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.2977867" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -276,8 +278,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-139">
-          <caret line="1" column="6" lean-forward="true" selection-start-line="1" selection-start-column="6" selection-end-line="1" selection-end-column="6" />
+        <state relative-caret-position="23">
+          <caret line="1" column="6" selection-start-line="1" selection-start-column="6" selection-end-line="1" selection-end-column="6" />
           <folding>
             <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
           </folding>
@@ -286,8 +288,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/mf-connect/public/styles/mf-connect.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="9295" column="22" selection-start-line="9295" selection-start-column="22" selection-end-line="9295" selection-end-column="22" />
+        <state relative-caret-position="2577">
+          <caret line="9301" column="26" selection-start-line="9301" selection-start-column="26" selection-end-line="9301" selection-end-column="26" />
         </state>
       </provider>
     </entry>
