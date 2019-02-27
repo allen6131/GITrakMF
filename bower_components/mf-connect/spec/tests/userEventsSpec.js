@@ -226,7 +226,7 @@ describe('events work', function () {
             return new mfStubs.StubPromise(mfStubs.directoryProviders);
         };
 
-        mfConnect.api.findByDirectoryId = function () {
+        mfConnect.api.findPortalsByDirectoryId = function () {
             return new mfStubs.StubPromise(mfStubs.multiLocationsProvider);
         };
 
@@ -258,7 +258,7 @@ describe('events work', function () {
             return new mfStubs.StubPromise(mfStubs.directoryProviders);
         };
 
-        mfConnect.api.findByDirectoryId = function (directoryLocationId, directoryLocationType, includeChildren) {
+        mfConnect.api.findPortalsByDirectoryId = function (directoryLocationId, directoryLocationType, includeChildren) {
             return new mfStubs.StubPromise([mfStubs.portal, mfStubs.portal]);
         };
 

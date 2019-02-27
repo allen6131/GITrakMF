@@ -1,7 +1,7 @@
 h2, .h2 {
 	@include mf-font-preset(large);
     font-weight: 600;
-	margin-bottom: $mf-buffer__small;
+	margin-bottom: $mf-buffer__large;
     margin-left: $mf-buffer__small;
     margin-right: $mf-buffer__small;
     margin-top: 0;
@@ -10,7 +10,7 @@ h2, .h2 {
     h2, .h2 {
 		@include mf-font-preset(xl);
         font-weight: 600;
-		margin-bottom: $mf-buffer__medium;
+		margin-bottom: $mf-buffer__large;
         margin-left: $mf-buffer__medium;
         margin-right: $mf-buffer__medium;
     }

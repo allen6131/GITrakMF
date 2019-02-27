@@ -1,7 +1,7 @@
 var _ = require('lodash');
 var Promise = require('bluebird');
 
-var mfConnectService = (function() {
+var mfConnectService = (function () {
     'use strict';
 
     // *** these are here for reference and will be taken out before we go out with mfConnect
@@ -13,7 +13,7 @@ var mfConnectService = (function() {
 
     return {
 
-        getMfConnectData: function() {
+        getMfConnectData: function () {
             return mfConnectData;
         },
 
@@ -22,36 +22,36 @@ var mfConnectService = (function() {
          *  options will include userUuid, customerUuid, accessToken, and url for env
          *  it will also include apiKey if demo or prod env
          */
-        setMfConnectData: function(options) {
+        setMfConnectData: function (options) {
 
             mfConnectData = options;
             apiUrl = options.url;
 
             return mfConnectService.findAllProfiles()
-                .then(function(profiles) {
-                    _.forEach(profiles, function(profile) {
+                .then(function (profiles) {
+                    _.forEach(profiles, function (profile) {
                         if (profile.isSelf) {
                             mfConnectData.profileId = profile.id;
                         }
                     });
                     return mfConnectData;
-                },function(error) {
+                }, function (error) {
                     return error;
                 });
             // error handling?
         },
 
         // if token expires, reset token
-        setAccessToken: function(token) {
+        setAccessToken: function (token) {
             mfConnectData.accessToken = token;
         },
 
         // probably won't need these, well set profileId in beginning and it'll be on the data object throughout but eh
-        getProfileId: function() {
+        getProfileId: function () {
             return mfConnectData.profileId;
         },
 
-        setProfileId: function(profileId) {
+        setProfileId: function (profileId) {
             mfConnectData.profileId = profileId;
         },
 
@@ -59,7 +59,7 @@ var mfConnectService = (function() {
         /*
          *  Returns an array of all profiles connected to the userUuid
          */
-        findAllProfiles: function() {
+        findAllProfiles: function () {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles';
             return mfConnectService.generatePromiseRequest('GET', url);
         },
@@ -67,7 +67,7 @@ var mfConnectService = (function() {
         /*
          *  Returns a single profile for the given profileId
          */
-        findProfileById: function(profileId) {
+        findProfileById: function (profileId) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
@@ -76,7 +76,7 @@ var mfConnectService = (function() {
         /*
          *  Returns an array of all connections associated with the userUuid
          */
-        findAllConnections: function() {
+        findAllConnections: function () {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections';
             return mfConnectService.generatePromiseRequest('GET', url);
         },
@@ -84,11 +84,8 @@ var mfConnectService = (function() {
         /*
          *  Returns a detailed connection object associated with the connectionId
          */
-        findConnectionById: function(connectionId, refresh) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections/' + connectionId;
-            if (refresh) {
-                url += '?refresh=' + refresh;
-            }
+        findConnectionById: function (connectionId, profileId) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections/' + connectionId;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
@@ -96,8 +93,8 @@ var mfConnectService = (function() {
          *  update connection with new connectionData
          */
         // also need hardRefresh param
-        updateConnection: function(connectionData, refresh) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections/' + connectionData.id;
+        updateConnection: function (profileId, connectionData, refresh) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections/' + connectionData.id;
             if (refresh) {
                 url += '?refresh=' + refresh;
             }
@@ -107,32 +104,41 @@ var mfConnectService = (function() {
         /*
          *  returns list of connections for specific profileId
          */
-        findConnectionsForProfile: function(profileId) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections';
+        findConnectionsForProfile: function (profileId) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections';
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
         /*
          *  create a new connection for profile
          */
-        createConnectionForProfile: function(profileId, connectionInfo) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections';
-            return mfConnectService.generatePromiseRequest('POST', url, connectionInfo);
+        createConnectionForProfile: function (profileId, portalId, locationId, locationType, providerNameAlias, credentialInfo) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections?providerNameAlias=' + providerNameAlias;
+            if (portalId) {
+                url += '&portalId=' + portalId;
+            }
+            if (locationId) {
+                url += '&locationId=' + locationId;
+            }
+            if (locationType) {
+                url += '&locationType=' + locationType;
+            }
+            return mfConnectService.generatePromiseRequest('POST', url, credentialInfo);
         },
 
-        findConnectionByProfileIdAndConnectionId: function(profileId, connectionId) {
+        findConnectionByProfileIdAndConnectionId: function (profileId, connectionId) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections/' + connectionId;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
         // provider endpoints
-        updateProviderConnectionInfo: function(connectionId, providerAliasInfo) {
+        updateProviderConnectionInfo: function (connectionId, providerAliasInfo) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections/' + connectionId + '/providers/' + providerAliasInfo.providerId;
             return mfConnectService.generatePromiseRequest('PUT', url, providerAliasInfo);
         },
 
-        deleteProviderConnection: function(connectionId, providerId) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections/' + connectionId + '/providers/' + providerId;
+        deleteConnection: function (profileId, connectionId) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections/' + connectionId;
             return mfConnectService.generatePromiseRequest('DELETE', url);
         },
 
@@ -141,8 +147,8 @@ var mfConnectService = (function() {
          * GET /search
          * maybe pass these in customerUuid, userUuid, apiKey, accessToken
          */
-        findAllDirectorySearch: function(searchParams) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/search?q=' + searchParams.q + '&filterByZip=' + searchParams.filterByZip + '&limit=' + searchParams.limit;
+        findAllDirectorySearch: function (searchParams) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/search?searchQuery=' + searchParams.searchQuery + '&zip=' + searchParams.zip;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
@@ -150,7 +156,7 @@ var mfConnectService = (function() {
          * Fetch office information by officeId
          * GET /offices/{officeId}
          */
-        fetchOfficeById: function(officeId, includeProviders) {
+        fetchOfficeById: function (officeId, includeProviders) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/offices/' + officeId;
             if (includeProviders) {
                 url += '?includeProviders=' + includeProviders;
@@ -162,7 +168,7 @@ var mfConnectService = (function() {
          * Fetch facility information by facilityId
          * GET /facilities/{facilityId}
          */
-        fetchFacilityById: function(facilityId, includeOffices, includeProviders) {
+        fetchFacilityById: function (facilityId, includeOffices, includeProviders) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/facilities/' + facilityId; // + '&includeOffices=false' (defaults true)
             if (includeProviders) {
                 url += '?includeProviders=' + includeProviders;
@@ -176,38 +182,20 @@ var mfConnectService = (function() {
             return mfConnectService.generateRequest('GET', url);
         },
 
-        /*
-         * Fetch practice information by practiceId
-         * GET /practices/{practiceId}
-         * if includeOffices, fetchPracticeLocations
-         */
-        fetchPracticeById: function(practiceId, includeOffices) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/practices/' + practiceId;
-            if (includeOffices) {
-                url += '?includeOffices=' + includeOffices;
-            }
-            return mfConnectService.generatePromiseRequest('GET', url);
-        },
-
-        /*
-         * Fetch provider information by providerId
-         * GET /providers/{providerId}
-         * if includeLocations, fetchProviderLocations
-         */
-        fetchProviderById: function(providerId, includeLocations) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/providers/' + providerId;
-            if (includeLocations) {
-                url += '?includeLocations=' + includeLocations;
-            }
-            return mfConnectService.generatePromiseRequest('GET', url);
-        },
-
         // portal service
         /*
          *  Fetch one portal by Id
          */
-        findOnePortalById: function(portalId) {
+        findPortalById: function (portalId) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/portals/' + portalId;
+            return mfConnectService.generatePromiseRequest('GET', url);
+        },
+
+        /*
+         * fetch portals by url
+         */
+        fetchPortalsByUrl: function (primaryUrl) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/portals/search?primaryUrl=' + encodeURIComponent(primaryUrl);
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
@@ -215,7 +203,7 @@ var mfConnectService = (function() {
          * Fetch portals by directory id and directory type
          * GET /portals?directoryLocationId= &directoryLocationType=
          */
-        findByDirectoryId: function(directoryLocationId, directoryLocationType, includeChildren) {
+        findPortalsByDirectoryId: function (directoryLocationId, directoryLocationType, includeChildren) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/portals';
             if (directoryLocationId && directoryLocationType) {
                 url += '?directoryLocationId=' + directoryLocationId + '&directoryLocationType=' + directoryLocationType;
@@ -231,7 +219,7 @@ var mfConnectService = (function() {
         },
 
         // livedoc
-        getLiveDocResources: function(profileId, resourceType) {
+        getLiveDocResources: function (profileId, resourceType) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/resources';
             if (resourceType) {
                 url += '?resourceType=' + resourceType;
@@ -239,12 +227,12 @@ var mfConnectService = (function() {
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
-        getLiveDocResourcesById: function(profileId, liveDocItemId) {
+        getLiveDocResourcesById: function (profileId, liveDocItemId) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/resources/' + liveDocItemId;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
-        getLiveDocSummaries: function(profileId, resourceType) {
+        getLiveDocSummaries: function (profileId, resourceType) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/resources/summaries';
             if (resourceType) {
                 url += '?resourceType=' + resourceType;
@@ -252,7 +240,7 @@ var mfConnectService = (function() {
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
-        generateRequest: function(method, url) {
+        generateRequest: function (method, url) {
             var token = 'bearer ' + mfConnectData.accessToken;
             var request = new XMLHttpRequest();
             request.open(method, url, false);
@@ -274,15 +262,15 @@ var mfConnectService = (function() {
         },
 
         // generate a promise request based on parameters passed in
-        generatePromiseRequest: function(method, url, requestBody) {
-            return new Promise(function(resolve, reject) {
+        generatePromiseRequest: function (method, url, requestBody) {
+            return new Promise(function (resolve, reject) {
 
                 var token = 'bearer ' + mfConnectData.accessToken;
 
                 var request = new XMLHttpRequest();
                 request.open(method, url);
                 // request went through, either returns response or error
-                request.onload = function() {
+                request.onload = function () {
                     // covers 200 and 204 no content, any others?
                     if (this.status >= 200 && this.status < 300) {
                         if (request.responseText !== '') {
@@ -296,7 +284,7 @@ var mfConnectService = (function() {
                     }
                 };
                 // request did not go through
-                request.onerror = function() {
+                request.onerror = function () {
                     reject({
                         status: this.status,
                         message: 'An unknown error occurred.'

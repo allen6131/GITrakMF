@@ -341,7 +341,7 @@ describe('main', function() {
             });
 
             it('should refresh connection', function() {
-                mfConnect._refreshConnection(selectedConnection);
+                mfConnect._refreshConnection({}, selectedConnection);
             });
 
             it('should update connection if credentials are present', function() {
@@ -369,5 +369,5 @@ describe('main', function() {
             mfConnect._createConnectionOverviewContent(previousView);
         });
     });
-    
+
 });

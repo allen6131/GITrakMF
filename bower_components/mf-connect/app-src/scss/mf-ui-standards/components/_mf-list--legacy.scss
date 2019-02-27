@@ -11,6 +11,22 @@
 		border-top: 0;
 	}
 
+	&.mf-negative-alert {
+		border: 6px solid #FCEDED;
+		border-radius: 4px;
+		background: #FFFFFF;
+		box-shadow: 0px 0px 0px 2px #CC0000;
+		margin: 0 $mf-buffer__medium $mf-buffer__molecule--after $mf-buffer__medium;
+
+		@media (max-width: map-get($mf-breakpoints, medium)) {
+			margin: 0 $mf-buffer__small $mf-buffer__molecule--after $mf-buffer__small;
+		}
+	}
+
+	&.inside-border {
+		margin: 0 $mf-buffer__medium $mf-buffer__molecule--after $mf-buffer__medium;
+	}
+
 	// List row
 	.mf-list__item,
 	&.mf-list__size--medium .mf-list__item {
@@ -32,6 +48,24 @@
 		text-decoration: none;
 		width: 100%;
 		cursor: pointer;
+
+		// Remove borders from list item
+		&.mf-borderless {
+			border: 0;
+		}
+
+		&.mf-borderless-center {
+			text-align: center;
+			border: 0;
+		}
+
+		&.mf-border-negative {
+			text-align: center;
+			border-top: 1px solid #CC0000;
+			border-left: 0;
+			border-right: 0;
+			border-bottom: 1px solid #CC0000;
+		}
 
 		// List rows with a normal size primary line and a small secondary line
 		&.mf-list--byline {
@@ -95,6 +129,20 @@
 					left: $mf-buffer__medium;
 				}
 			}
+
+			.mf-icon-header {
+				position: absolute;
+				left: $mf-buffer__medium;
+				top: 10px;
+
+				@media (min-width: map-get($mf-breakpoints, medium)) {
+					left: $mf-buffer__large;
+				}
+
+				@media (max-width: map-get($mf-breakpoints, small)) {
+					left: $mf-buffer__small;
+				}
+			}
 		}
 
 		// Primary text in a list row
@@ -105,6 +153,34 @@
 			padding-left: 0;
 			padding-right: 0;
 		}
+
+		.mf-list__element--primary-header {
+			@include mf-font-preset(large);
+			margin: 0 0 2px 0;
+			padding-top: 10px;
+			padding-left: $mf-buffer__xl;
+			padding-right: 0;
+
+			@media (max-width: map-get($mf-breakpoints, small)) {
+				padding-left: $mf-buffer__medium;
+			}
+		}
+
+		.mf-list__element--primary-header-negative {
+			@include mf-font-preset(normal, negative);
+			margin: 0 0 2px 0;
+			padding-top: 10px;
+			padding-left: $mf-buffer__xs;
+			padding-right: 0;
+
+			@media (max-width: map-get($mf-breakpoints, small)) {
+				padding-left: $mf-buffer__2xs;
+			}
+		}
+
+		.mf-list__item-color-brand {
+          color: $mf-product-color__medfusion;
+        }
 
 		// Consistent spacing to vertically center these items in list rows
 		// (the vertical centering isn't real, so if the list overflows these will stick toward the top of the row)
@@ -180,6 +256,42 @@
 			margin: 0 0 $mf-buffer__small 0;
 			padding-left: 0;
 			padding-right: 0;
+		}
+
+		.mf-list__element--secondary-padding {
+			@include mf-font-preset(small,dim);
+			margin: 0 0 $mf-buffer__small 0;
+			padding-left: 0;
+			padding-right: $mf-buffer__large;
+		}
+
+		.mf-list__element--secondary-negative {
+			@include mf-font-preset(small,negative);
+			margin: 0 0 $mf-buffer__small 0;
+			padding-left: 0;
+			padding-right: 0;
+		}
+
+		.mf-list__element--secondary-header {
+			@include mf-font-preset(normal,dim);
+			margin: 0 0 $mf-buffer__small 0;
+			padding-left: $mf-buffer__xl;
+			padding-right: 0;
+
+			@media (max-width: map-get($mf-breakpoints, small)) {
+				padding-left: $mf-buffer__medium;
+			}
+		}
+
+		.mf-list__element--secondary-header-negative {
+			@include mf-font-preset(normal,dim);
+			margin: 0 0 $mf-buffer__small 0;
+			padding-left: $mf-buffer__xs;
+			padding-right: 0;
+
+			@media (max-width: map-get($mf-breakpoints, small)) {
+			  padding-left: $mf-buffer__2xs;
+			}
 		}
 	}
 

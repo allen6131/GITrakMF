@@ -1,7 +1,7 @@
 h1, .h1 {
     @include mf-font-preset(xl);
     font-weight: 500;
-    margin-bottom: $mf-buffer__medium;
+    margin-bottom: $mf-buffer__large;
     margin-left: $mf-buffer__small;
     margin-right: $mf-buffer__small;
     margin-top: 0;
@@ -9,6 +9,10 @@ h1, .h1 {
     &.large {
         @include mf-font-preset(3xl);
         font-weight: 100;
+    }
+
+    &.negative {
+        color: $mf-color__negative;
     }
 }
 @media (min-width: map-get($mf-breakpoints, medium)) {
@@ -20,6 +24,10 @@ h1, .h1 {
 
         &.small {
             @include mf-font-preset(4xl);
+        }
+
+        &.negative {
+            color: $mf-color__negative;
         }
     }
 }

@@ -77,10 +77,14 @@ $mf-font__file-location:  "../../public/fonts" !default; // No trailing slash
     }
     .modal-body {
       @include mf-border--dark();
-      padding: 24px;
+      padding: 16px;
       overflow-y: scroll;
       max-height: 500px;
       min-height: 300px;
+
+      @media (max-width: map-get($mf-breakpoints, small)) {
+        padding: $mf-buffer__small;
+      }
     }
     .modal-footer {
       padding: 16px;
@@ -95,6 +99,7 @@ $mf-font__file-location:  "../../public/fonts" !default; // No trailing slash
         margin-left: 16px;
         width: auto;
       }
+
 
       :last-child {
         margin-left: 0;
@@ -115,14 +120,26 @@ $mf-font__file-location:  "../../public/fonts" !default; // No trailing slash
 
   .mf-list-header {
     color: #4a4a4a;
-    font-weight: normal;
-    font-size: 18px;
+    font-weight: 600;
+    font-size: 16px;
     line-height: 1.222;
 
     :first-child {
       margin-top: 0;
     }
   }
+
+  .mf-list-header--small {
+    color: #4a4a4a;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.222;
+
+    :first-child {
+      margin-top: 0;
+    }
+  }
+
   @mixin display-flex {
     display: -webkit-box;
     display: -webkit-flex;
@@ -231,6 +248,14 @@ $mf-font__file-location:  "../../public/fonts" !default; // No trailing slash
     padding-left: 16px;
     display: inline-block;
   }
+
+  .mf-list__element--primary-single-line {
+
+    margin: 0 0 22px 0;
+    padding-top: 21px;
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 .mf-connect-btn {
@@ -243,5 +268,51 @@ $mf-font__file-location:  "../../public/fonts" !default; // No trailing slash
     position: absolute;
     top: 8px;
     left: 24px;
+  }
+}
+
+.center-text {
+  text-align: center;
+}
+
+.mf-negative-alert-border {
+  border: 6px solid #FCEDED;
+  border-radius: 4px;
+  background: #FFFFFF;
+  box-shadow: 0px 0px 0px 2px #CC0000;
+  margin: 0 $mf-buffer__medium $mf-buffer__molecule--after $mf-buffer__medium;
+
+  @media (max-width: map-get($mf-breakpoints, medium)) {
+    margin: 0 $mf-buffer__small $mf-buffer__molecule--after $mf-buffer__small;
+  }
+}
+
+.mf-gradient {
+  margin-left: -16px !important;
+  margin-right: -16px !important;
+
+  @media (max-width: map-get($mf-breakpoints, small)) {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+  }
+
+  &.success {
+    background-image: linear-gradient(to right, rgba(240, 250, 0, 0.25) 2%, rgba(69, 205, 20, 0.44) 61%, #45CD14 99%);
+  }
+
+  &.pending {
+    background-image: linear-gradient(to right, rgba(229, 229, 229, 0.30) 2%, #EDEDED 62%, #CFCECE 98%);
+  }
+
+  &.refreshing {
+    background-image: linear-gradient(to right, rgba(168, 241, 241, 0.50) 0%, rgba(80, 203, 233, 0.66) 65%, rgba(49, 179, 239, 0.99) 100%);
+  }
+
+  &.invalid {
+    background-image: linear-gradient(to right, rgba(254, 206, 206, 0.28) 5%, rgba(255, 0, 29, 0.19) 62%, rgba(255, 0, 29, 0.37) 98%);
+  }
+
+  &.unsupported {
+    background-image: linear-gradient(to right, rgba(240, 250, 0, 0.30) 2%, #FDDE7D 61%, rgba(253, 191, 0, 0.68) 99%);
   }
 }

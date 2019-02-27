@@ -52,6 +52,10 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 
+    &.hidden {
+      display: none;
+    }
+
     &:focus {
       @include mf-focus();
     }

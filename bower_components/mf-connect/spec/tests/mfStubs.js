@@ -48,7 +48,7 @@ MfStubs.StubMfConnect = function () {
     mfConnect.api.findAllDirectorySearch = function (term, zipCode) {
         return new MfStubs.StubPromise([MfStubs.provider]);
     };
-    mfConnect.api.findByDirectoryId = function (directoryLocationId, directoryLocationType, includeChildren) {
+    mfConnect.api.findPortalsByDirectoryId = function (directoryLocationId, directoryLocationType, includeChildren) {
         return new MfStubs.StubPromise([MfStubs.portal]);
     };
     mfConnect.api.findConnectionsForProfile = function () {

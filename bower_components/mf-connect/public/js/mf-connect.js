@@ -1,4 +1,269 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],2:[function(require,module,exports){
+(function (setImmediate,clearImmediate){
+var nextTick = require('process/browser.js').nextTick;
+var apply = Function.prototype.apply;
+var slice = Array.prototype.slice;
+var immediateIds = {};
+var nextImmediateId = 0;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) { timeout.close(); };
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(window, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// That's not how node.js implements it but the exposed api is the same.
+exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
+  var id = nextImmediateId++;
+  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+
+  immediateIds[id] = true;
+
+  nextTick(function onNextTick() {
+    if (immediateIds[id]) {
+      // fn.call() is faster so we optimize for the common use-case
+      // @see http://jsperf.com/call-apply-segu
+      if (args) {
+        fn.apply(null, args);
+      } else {
+        fn.call(null);
+      }
+      // Prevent ids from leaking
+      exports.clearImmediate(id);
+    }
+  });
+
+  return id;
+};
+
+exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
+  delete immediateIds[id];
+};
+}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
+},{"process/browser.js":1,"timers":2}],3:[function(require,module,exports){
 var _ = require('lodash');
 var $ = require('jquery');
 var mfConnectService = require('./mf-connect-service.js');
@@ -21,7 +286,6 @@ var mfUtils = require('./mf-utils.js');
         "ON_CLOSE_DIALOG": "onCloseDialog",
         "ON_SEARCH_PROVIDER": "onSearchProvider",
         "ON_SELECT_PROVIDER": "onSelectProvider",
-        "ON_SELECT_LOCATION": "onSelectLocation",
         "ON_SELECT_PORTAL": "onSelectPortal",
         "ON_CONNECT_PROVIDER": "onConnectProvider",
         "ON_UPDATE_PROVIDER": "onUpdateProvider",
@@ -39,24 +303,28 @@ var mfUtils = require('./mf-utils.js');
             });
     };
 
-    MfConnect.prototype.invokeProviderDeleteEvent = function (provider, connection) {
-        MfConnect.prototype.invokeExistingProviderEvent(MfConnect.prototype.USER_EVENTS.ON_DELETE_PROVIDER, provider, connection);
+    MfConnect.prototype.invokeProviderDeleteEvent = function (connection) {
+        MfConnect.prototype.invokeExistingProviderEvent(MfConnect.prototype.USER_EVENTS.ON_DELETE_PROVIDER, connection);
     };
 
-    MfConnect.prototype.invokeProviderUpdateEvent = function (provider, connection) {
-        MfConnect.prototype.invokeExistingProviderEvent(MfConnect.prototype.USER_EVENTS.ON_UPDATE_PROVIDER, provider, connection);
+    MfConnect.prototype.invokeProviderUpdateEvent = function (connection) {
+        MfConnect.prototype.invokeExistingProviderEvent(MfConnect.prototype.USER_EVENTS.ON_UPDATE_PROVIDER, connection);
     };
 
-    MfConnect.prototype.invokeProviderRefreshEvent = function (provider, connection) {
-        MfConnect.prototype.invokeExistingProviderEvent(MfConnect.prototype.USER_EVENTS.ON_REFRESH_PROVIDER, provider, connection);
+    MfConnect.prototype.invokeProviderRefreshEvent = function (connection) {
+        MfConnect.prototype.invokeExistingProviderEvent(MfConnect.prototype.USER_EVENTS.ON_REFRESH_PROVIDER, connection);
     };
 
-    MfConnect.prototype.invokeExistingProviderEvent = function (eventType, provider, connection) {
+    MfConnect.prototype.invokeOnSearchPortalHandler = function (searchInfo) {
+        var metadata = {"url": searchInfo.primaryUrl};
+        MfConnect.prototype.invokeEventHandler(MfConnect.prototype.USER_EVENTS.ON_SEARCH_PROVIDER, metadata);
+    };
+
+    MfConnect.prototype.invokeExistingProviderEvent = function (eventType, connection) {
         var metadata = {"connectionId": connection.id};
         metadata.portalId = connection.portalId;
         metadata.portalType = connection.associatedPortal.getPortalTypeName();
         metadata.portalName = connection.associatedPortal.name;
-        metadata.providerName = provider.nameAlias;
         MfConnect.prototype.invokeEventHandler(eventType, metadata);
     };
 
@@ -65,17 +333,13 @@ var mfUtils = require('./mf-utils.js');
         MfConnect.prototype.invokeEventHandler(MfConnect.prototype.USER_EVENTS.ON_ERROR, metadata);
     };
 
-    MfConnect.prototype.invokeOnSelectLocation = function (displayName, location) {
-        var metadata = {"id": location.locationInfo.id};
-        metadata["displayName"] = displayName;
-        metadata["address"] = mfUtils.getAddressDisplayName(location.locationInfo.address);
-        MfConnect.prototype.invokeEventHandler(MfConnect.prototype.USER_EVENTS.ON_SELECT_LOCATION, metadata);
-    };
-
     MfConnect.prototype.invokeOnSelectPortal = function (portal) {
         var locationHasPortal = undefined !== portal;
         if (!locationHasPortal) {
-            var metadata = {"type": "NO_PORTAL", "message": "The selected location is not associated to any portals yet."};
+            var metadata = {
+                "type": "NO_PORTAL",
+                "message": "The selected location is not associated to any portals yet."
+            };
             MfConnect.prototype.invokeEventHandler(MfConnect.prototype.USER_EVENTS.ON_SELECT_PORTAL, metadata);
             return;
         }
@@ -103,23 +367,19 @@ var mfUtils = require('./mf-utils.js');
     };
 
     MfConnect.prototype.invokeOnSelectProviderHandler = function (displayName, selectedItem) {
-        var metadata = {"displayName": displayName};
-        if (selectedItem[0].address) {
-            metadata["address"] = mfUtils.getAddressDisplayName(selectedItem[0].address);
-        }
-        if (selectedItem[0].provider) {
-            metadata["address"] = mfUtils.getProviderDisplayAddress(selectedItem);
-            metadata["id"] = selectedItem[0].provider.id;
-        }
-        else if (selectedItem[0].practice) {
-            metadata["id"] = selectedItem[0].practice.id;
-            metadata["address"] = mfUtils.getPracticeDisplayAddress(selectedItem);
-        }
-        else if (selectedItem[0].office) {
-            metadata["id"] = selectedItem[0].office.id;
-        }
-        else if (selectedItem[0].facility) {
-            metadata["id"] = selectedItem[0].facility.id;
+        var metadata = {'displayName': displayName};
+        metadata['address'] = mfUtils.getAddressDisplayName(selectedItem);
+
+        if (selectedItem.providerId) {
+            metadata['address'] = mfUtils.getProviderDisplayAddress(selectedItem);
+            metadata['id'] = selectedItem.providerId;
+        } else if (selectedItem.practiceId) {
+            metadata['id'] = selectedItem.practiceId;
+            metadata['address'] = mfUtils.getPracticeDisplayAddress(selectedItem);
+        } else if (selectedItem.officeId) {
+            metadata['id'] = selectedItem.officeId;
+        } else if (selectedItem.facilityId) {
+            metadata['id'] = selectedItem.facilityId;
         }
         MfConnect.prototype.invokeEventHandler(MfConnect.prototype.USER_EVENTS.ON_SELECT_PROVIDER, metadata);
     };
@@ -142,11 +402,27 @@ var mfUtils = require('./mf-utils.js');
     // open MfConnect modal - build out modal, initialize close event
     MfConnect.prototype.openModal = function () {
         buildOutModal.call(this);
-        createConnectionOverviewContent();
+
+        if (this.hasPreSelectedPortal()) {
+            showPreSelectedPortal(this.api.getMfConnectData()["preSelectedPortal"], 'createConnectionResults', null, true);
+        } else {
+            createConnectionOverviewContent();
+        }
         initializeEvents.call(this);
         this.connectModal.style.display = 'block';
         this.overlay.className = this.overlay.className + ' connect-open';
         this.invokeEventHandler(this.USER_EVENTS.ON_OPEN_DIALOG);
+    };
+
+    MfConnect.prototype.hasPreSelectedPortal = function () {
+        var portal = this.api.getMfConnectData()["preSelectedPortal"];
+        if (portal === undefined) {
+            return false;
+        }
+        if (typeof portal !== "object") {
+            return false;
+        }
+        return portal.hasOwnProperty("portalId");
     };
 
     /*
@@ -155,12 +431,10 @@ var mfUtils = require('./mf-utils.js');
      *  It initializes the modal content with the connection overview screen
      */
     function buildOutModal() {
-
         var docFrag = document.createDocumentFragment();
 
         // add overlay
         this.overlay = createHtmlElement('div', undefined, 'mf-connect-overlay fade-and-drop');
-
 
         docFrag.appendChild(this.overlay);
 
@@ -187,9 +461,8 @@ var mfUtils = require('./mf-utils.js');
         this.modalBack = createHtmlElement('a', 'mfConnectBack', 'mf-back-button');
         this.modalBack.style.display = 'none';
         this.buttonHolder.appendChild(this.modalBack);
+
         // modal back button click block
-
-
         this.modalBackClickBlock = createHtmlElement('div', 'mfBtnClickBlock', 'mf-loading__page-blocker');
 
         this.modalHeader.appendChild(this.modalBackClickBlock);
@@ -245,12 +518,44 @@ var mfUtils = require('./mf-utils.js');
         }
     }
 
+    // addAConnectionValues are things that we need to keep track of while the user
+    // navigates through the 'Add a connection' flow. i.e. filter selection, headers and other constants specific to the path, etc.
+    var addAConnectionValues = {};
+
+    function setAddAConnectionValues(innerHTML) {
+        if (innerHTML === 'Doctor name') {
+            addAConnectionValues = {
+                filter: 'doctor',
+                searchSubHeader: 'Find your doctor',
+                searchByLabel: 'Search by doctor name',
+                searchByPlaceholderText: 'First and last name',
+                selectSubHeader: 'Select your doctor'
+            };
+        } else if (innerHTML === 'Office name') {
+            addAConnectionValues = {
+                filter: 'practice',
+                searchSubHeader: 'Find your doctor\'s office',
+                searchByLabel: 'Search by office name',
+                searchByPlaceholderText: 'Name of office',
+                selectSubHeader: 'Select office'
+            };
+        } else if (innerHTML === 'Portal website address') {
+            addAConnectionValues = {
+                filter: 'portal',
+                searchSubHeader: 'Find your portal website',
+                searchByLabel: 'Search by website address',
+                searchByPlaceholderText: '',
+                selectSubHeader: 'Select your portal'
+            };
+        }
+    }
+
     /*
      *  Display error to user
      *  Right now, the error field is at the top of the modal and we're just adding text to that field
      */
     function displayError(errorText) {
-        document.getElementById('mfConnectError').style.display = 'block';
+        changeErrorVisibility(true);
         document.getElementById('mfConnectError').innerHTML = errorText;
         MfConnect.prototype.invokeOnErrorHandler(errorText);
     }
@@ -266,6 +571,29 @@ var mfUtils = require('./mf-utils.js');
         return elem;
     }
 
+    function generateViewHeaders(headerTitle, subHeaderTitle, descriptionText) {
+        var headerContent = document.createElement('div');
+
+        // header
+        var header = document.createElement('h1');
+        header.innerHTML = headerTitle;
+        headerContent.appendChild(header);
+
+        // sub header
+        var subHeader = document.createElement('h2');
+        subHeader.innerHTML = subHeaderTitle;
+        headerContent.appendChild(subHeader);
+
+        //paragraph
+        if (descriptionText) {
+            var paragraph = document.createElement('p');
+            paragraph.innerHTML = descriptionText;
+            headerContent.appendChild(paragraph);
+        }
+
+        return headerContent;
+    }
+
     /*
      *  Display loading indicator and click block
      */
@@ -279,61 +607,167 @@ var mfUtils = require('./mf-utils.js');
         }
     }
 
-    /*
-     *  This builds out the content for the search form
-     *  previousView is the id of the node from the previous view that we will remove from contentHolder
-     */
-    function goToSearchForConnection(previousView) {
-        // hide error when screen first loads
-        document.getElementById('mfConnectError').style.display = 'none';
-        displayLoading(true);
+    function getBackButton(innerHTML) {
+        var button = document.getElementById('mfConnectBack');
+        button.style.display = 'block';
+        button.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>' + innerHTML;
+        return button;
+    }
 
+    function generateSearchForm() {
+        // innerHtml of form
+        if (addAConnectionValues.filter === 'portal') {
+            return '<label class="mf-form__label" for="primaryUrl">' + addAConnectionValues.searchByLabel + '<span class="mf-form__label--required">Required</span></label>' +
+                '<input class="mf-form__input--text" type="search" id="primaryUrl" minlength="1" required placeholder="' + addAConnectionValues.searchByPlaceholderText + '"><label class="mf-form__error" for="primaryUrl">Error text</label>' +
+                '<input class="mf-form__input--text hidden">';
+        } else {
+            return '<label class="mf-form__label" for="searchBy">' + addAConnectionValues.searchByLabel + '<span class="mf-form__label--required">Required</span></label>' +
+                '<input class="mf-form__input--text" type="search" id="searchBy" minlength="2" required placeholder="' + addAConnectionValues.searchByPlaceholderText + '"><label class="mf-form__error" for="searchBy">Error text</label>' +
+                '<label class="mf-form__label" for="searchZip">Near zip code<span class="mf-form__label--required">Required</span></label>' +
+                '<input class="mf-form__input--text" type="text" id="searchZip" name="searchZip" pattern="\\d*" minlength="5" maxlength="9" required><label class="mf-form__error" for="searchZip">Error text</label>';
+        }
+    }
+
+    function getPortalSearchResults(previousView, previousSearchParams) {
+        displayLoading(true);
+        var searchInfo = {};
+        if (!previousSearchParams) {
+            searchInfo.primaryUrl = document.getElementById('primaryUrl').value;
+        } else {
+            // if user goes 'back' to this step, previousSearchParams will be passed in b/c 'primaryUrl' no
+            // longer exist since we removed the parent node last time the user came through this step
+            // we want to reinitialize searchInfo with just the primaryUrl. we don't care about anything else in
+            // 'previousSearchParams' since from here moving forward the user will make a new selection
+            searchInfo.primaryUrl = previousSearchParams.primaryUrl;
+        }
+        if (searchInfo.primaryUrl) {
+            MfConnect.prototype.invokeOnSearchPortalHandler(searchInfo);
+            mfUtils.fetchPortalsByUrl(searchInfo.primaryUrl)
+                .then(function (results) {
+                    goToSearchResults(previousView, results, searchInfo);
+                }, function (error) {
+                    displayLoading(false);
+                    displayError('Error getting portal search results.');
+                });
+        } else {
+            displayLoading(false);
+            displayError('Please enter a portal website address.');
+        }
+    }
+
+    function showFindProviderView(previousView) {
         var createConnectionSearch = createHtmlElement('div', 'createConnectionSearch', 'create-connection-search');
 
-        // create header
-        var header = document.createElement('h1');
-        header.innerHTML = 'Find your provider';
-        createConnectionSearch.appendChild(header);
+        // header
+        var headerContent = generateViewHeaders('Add a connection', addAConnectionValues.searchSubHeader, null);
+        createConnectionSearch.appendChild(headerContent);
 
         // create form
         var searchForm = createHtmlElement('form', 'directorySearchForm', 'mf-form__group');
         searchForm.name = 'directorySearchForm';
-
-        // innerHtml of form
-        var searchFormHtml = '<label class="mf-form__label" for="searchBy">Search by person or place<span class="mf-form__label--required">Required</span></label>' +
-            '<input class="mf-form__input--text" type="search" id="searchBy" minlength="2" required><label class="mf-form__error" for="searchBy">Error text</label>' +
-            '<label class="mf-form__label" for="searchZip">Zip code<span class="mf-form__label--required">Required</span></label>' +
-            '<input class="mf-form__input--text" type="text" id="searchZip" name="searchZip" pattern="\\d*" minlength="5" maxlength="9" required><label class="mf-form__error" for="searchZip">Error text</label>';
-        searchForm.innerHTML = searchFormHtml;
+        searchForm.innerHTML = generateSearchForm();
 
         // create search button
         var searchBtn = createHtmlElement('button', 'directorySearchBtn', 'button mf-cta__primary');
         searchBtn.type = 'button';
         searchBtn.innerHTML = 'Search';
         searchBtn.onclick = function () {
-            getDirectorySearchResults('createConnectionSearch');
+            if (addAConnectionValues.filter === 'portal') {
+                getPortalSearchResults('createConnectionSearch', undefined);
+            } else {
+                getDirectorySearchResults('createConnectionSearch', undefined);
+            }
         };
         searchForm.appendChild(searchBtn);
         createConnectionSearch.appendChild(searchForm);
 
-        var healthGradesBrand = createHtmlElement('p', undefined, 'branding--subtle');
-        healthGradesBrand.innerHTML = 'Directory powered by Healthgrades';
-        createConnectionSearch.appendChild(healthGradesBrand);
+        if (addAConnectionValues.filter === 'practice' || addAConnectionValues.filter === 'doctor') {
+            var healthGradesBrand = createHtmlElement('p', undefined, 'branding--subtle');
+            healthGradesBrand.innerHTML = 'Directory powered by Healthgrades';
+            createConnectionSearch.appendChild(healthGradesBrand);
+        }
 
-        // set the back button
-        var button = document.getElementById('mfConnectBack');
-        button.style.display = 'block';
-        button.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to providers';
+        var button = getBackButton('Back');
         button.onclick = function () {
-            createConnectionOverviewContent('createConnectionSearch');
+            goToSearchForConnection('createConnectionSearch');
         };
-        document.getElementById('mfButtonHolder').className = 'header-bottom-border';
-
         displayLoading(false);
         // remove previous screen node
         // append new node we created here
-        $('#' + previousView).remove();
+        removePreviousView(previousView);
         document.getElementById('createConnectionContent').appendChild(createConnectionSearch);
+    }
+
+    function createFilterButtonId(id, innerHTML) {
+        var button = createHtmlElement('button', id, 'button mf-btn__connect mf-btn');
+        button.type = 'button';
+        button.innerHTML = innerHTML;
+        return button;
+    }
+
+    function showFindById(previousView, recommendedPortals) {
+        // reset addAConnectionValues whenever the user gets to this screen
+        addAConnectionValues = {};
+
+        var createFindById = createHtmlElement('div', 'createFindById', 'create-find-by-id');
+
+        //header
+        var headerContent = generateViewHeaders('Add a connection', 'Select a search option', 'Search for your patient portal using one of the following options.');
+        createFindById.appendChild(headerContent);
+
+        //filter buttons
+        var mfPracticeBtn = createFilterButtonId('mfPracticeBtn', 'Office name');
+        mfPracticeBtn.onclick = function () {
+            setAddAConnectionValues('Office name');
+            showFindProviderView('createFindById');
+        };
+        createFindById.appendChild(mfPracticeBtn);
+
+        var mfDoctorBtn = createFilterButtonId('mfDoctorBtn', 'Doctor name');
+        mfDoctorBtn.onclick = function () {
+            setAddAConnectionValues('Doctor name');
+            showFindProviderView('createFindById');
+        };
+        createFindById.appendChild(mfDoctorBtn);
+
+        var mfPortalBtn = createFilterButtonId('mfPortalBtn', 'Portal website address');
+        mfPortalBtn.onclick = function () {
+            setAddAConnectionValues('Portal website address');
+            showFindProviderView('createFindById');
+        };
+        createFindById.appendChild(mfPortalBtn);
+
+        var bckButton = getBackButton('Back to connections');
+        bckButton.onclick = function () {
+            createConnectionOverviewContent('createFindById');
+        };
+        document.getElementById('mfButtonHolder').className = 'header-bottom-border';
+
+
+        displayLoading(false);
+        removePreviousView(previousView);
+        document.getElementById('createConnectionContent').appendChild(createFindById);
+
+        showRecommendedPortals(recommendedPortals);
+    }
+
+    /*
+         *  This builds out the content for the search form
+         *  previousView is the id of the node from the previous view that we will remove from contentHolder
+         */
+    function goToSearchForConnection(previousView) {
+        // hide error when screen first loads
+        changeErrorVisibility(false);
+        displayLoading(true);
+
+        var successHandler = function (recommendedPortals) {
+            showFindById(previousView, recommendedPortals);
+        };
+
+        var errorHandler = function (error) {
+            showRecommendedPortalsError();
+        };
+        mfUtils.findRecommendedPortalsListData().then(successHandler, errorHandler);
     }
 
     /*
@@ -356,10 +790,9 @@ var mfUtils = require('./mf-utils.js');
             searchInfo.searchTerm = previousSearchParams.searchTerm;
             searchInfo.zipCode = previousSearchParams.zipCode;
         }
-
         if (searchInfo.searchTerm && searchInfo.zipCode) {
             MfConnect.prototype.invokeOnSearchProviderHandler(searchInfo);
-            mfUtils.getDirectorySearchResults(searchInfo.searchTerm, searchInfo.zipCode)
+            mfUtils.findDirectoryLocations(searchInfo.searchTerm, searchInfo.zipCode)
                 .then(function (results) {
                     goToSearchResults(previousView, results, searchInfo);
                 }, function (error) {
@@ -372,6 +805,84 @@ var mfUtils = require('./mf-utils.js');
         }
     }
 
+    function createSearchResultItem(name, address, clickFunction) {
+        var practiceLi = createHtmlElement('li', undefined, 'mf-list__item mf-list--byline');
+        practiceLi.innerHTML = '<span class="mf-icon mf-icon__chevron-right--hollow--exact--large mf-list__pull-right mf-color__dim"></span>' +
+            '<p class="mf-list__element--primary">' + name + '</p>' +
+            '<p class="mf-list__element--secondary">' + address + '</p>';
+        practiceLi.onclick = clickFunction;
+        return practiceLi;
+    }
+
+    function createPortalSearchResultItem(name, address, clickFunction) {
+        var portalLi = createHtmlElement('li', undefined, 'mf-list__item mf-list__element-left mf-list--byline');
+        portalLi.innerHTML = '<span class="mf-icon mf-icon__connections"></span>' +
+            '<span class="mf-icon mf-icon__chevron-right--hollow--exact--large mf-list__pull-right mf-color__dim"></span>' +
+            '<p class="mf-list__element--primary">' + name + '</p>' +
+            '<p class="mf-list__element--secondary-padding">' + address + '</p>';
+        portalLi.onclick = clickFunction;
+        return portalLi;
+    }
+
+    function createPlacesListFromPractices(searchResults, createConnectionResults, searchInfo) {
+        var placesHeader = createHtmlElement('h3', null, 'mf-list-header--small');
+        placesHeader.innerHTML = '<span>' + searchResults.practices.length + ' Results: ' + searchInfo.searchTerm + '</span>';
+        createConnectionResults.appendChild(placesHeader);
+
+        var placesList = createHtmlElement('ul', null, 'mf-list--legacy');
+
+        _.forEach(searchResults.practices, function (practice) {
+            var name = mfUtils.getPracticeDisplayName(practice);
+            var address = mfUtils.getPracticeDisplayAddress(practice);
+            var practiceLi = createSearchResultItem(name, address, function () {
+                directorySearchResultClick(name, practice, searchInfo);
+            });
+            placesList.appendChild(practiceLi);
+        });
+        createConnectionResults.appendChild(placesList);
+    }
+
+    function createPeopleList(searchResults, createConnectionResults, searchInfo) {
+        var providersHeader = createHtmlElement('h3', null, 'mf-list-header--small');
+        providersHeader.innerHTML = '<span>' + searchResults.providers.length + ' Results: ' + searchInfo.searchTerm + '</span>';
+        createConnectionResults.appendChild(providersHeader);
+
+        var providersList = createHtmlElement('ul', null, 'mf-list--legacy');
+
+        _.forEach(searchResults.providers, function (provider) {
+            var displayName = mfUtils.getProviderDisplayName(provider);
+            var displayAddress = mfUtils.getProviderDisplayAddress(provider);
+            var providerLi = createSearchResultItem(displayName, displayAddress, function () {
+                directorySearchResultClick(displayName, provider, searchInfo);
+            });
+            providersList.appendChild(providerLi);
+        });
+        createConnectionResults.appendChild(providersList);
+    }
+
+    function createPortalList(searchResults, createConnectionResults, searchInfo) {
+        var portalsHeader = createHtmlElement('h3', undefined, 'mf-list-header--small');
+        portalsHeader.innerHTML = '<span>' + searchResults.portals.length + ' Results: ' + searchInfo.primaryUrl + '</span>';
+        createConnectionResults.appendChild(portalsHeader);
+
+        var portalsList = createHtmlElement('ul', undefined, 'mf-list--legacy');
+        _.forEach(searchResults.portals, function (portal) {
+            var displayName = portal.name;
+            var portalUrl = portal.primaryUrl;
+            var portalsLi = createPortalSearchResultItem(displayName, portalUrl, function () {
+                portalSearchResultClick(portal, searchInfo);
+            });
+            portalsList.appendChild(portalsLi);
+        });
+        createConnectionResults.appendChild(portalsList);
+
+        if (searchResults.portals.length === 0) {
+	        var noResultsForPortalSearch = document.createElement('p');
+	        noResultsForPortalSearch.innerHTML = 'Your search may have been too specific, try shortening the website address i.e. \'dukemychart.org\'';
+	        createConnectionResults.appendChild(noResultsForPortalSearch);
+        }
+    }
+
     /*
      * this builds out the content for the search results
      * removes previousView node and appends new node created
@@ -379,98 +890,36 @@ var mfUtils = require('./mf-utils.js');
      */
     function goToSearchResults(previousView, searchResults, searchInfo) {
         // hide error when screen first loads
-        document.getElementById('mfConnectError').style.display = 'none';
+        changeErrorVisibility(false);
 
         var createConnectionResults = createHtmlElement('div', 'createConnectionResults', 'create-connection-results');
 
         // header
-        var header = document.createElement('h1');
-        header.innerHTML = 'Search results';
-        createConnectionResults.appendChild(header);
-
-        // only display results if we actually have results to display otherwise, tell the user no results
-        if (searchResults.practices.length || searchResults.providers.length) {
-
-            // create list of places
-            if (searchResults.practices.length) {
-                // group practices by practice vs office vs facility sourceId
-                var practices = _.groupBy(searchResults.practices, function (practice) {
-                    if (practice.practice) {
-                        return practice.practice.sourceId;
-                    } else if (practice.office) {
-                        return practice.office.sourceId;
-                    } else {
-                        return practice.facility.sourceId;
-                    }
-                });
-
-                var placesHeader = createHtmlElement('p', undefined, 'mf-list-header');
-                placesHeader.innerHTML = '<span>Places</span>';
-                createConnectionResults.appendChild(placesHeader);
-
-                var placesList = createHtmlElement('ul', undefined, 'mf-list--legacy');
-
-                _.forEach(practices, function (practice) {
-                    var name = mfUtils.getPracticeDisplayName(practice);
-                    var address = mfUtils.getPracticeDisplayAddress(practice);
-
-                    var practiceLi = createHtmlElement('li', undefined, 'mf-list__item mf-list--byline');
-                    practiceLi.innerHTML = '<p class="mf-list__element--primary">' + name + '</p><p class="mf-list__element--secondary">' + address + '</p>';
-                    practiceLi.onclick = function () {
-                        selectSearchResult(name, practice, searchInfo);
-                    };
-                    placesList.appendChild(practiceLi);
-                });
-                createConnectionResults.appendChild(placesList);
-            }
-
-            // create list of people
-            if (searchResults.providers.length) {
-                // group providers by provider Id to remove duplicates in the list
-                var providers = _.groupBy(searchResults.providers, function (provider) {
-                    return provider.provider.sourceId;
-                });
-
-                var providersHeader = document.createElement('p');
-                providersHeader.className = 'mf-list-header';
-                providersHeader.innerHTML = '<span>People</span>';
-                createConnectionResults.appendChild(providersHeader);
-
-                var providersList = document.createElement('ul');
-                providersList.className = 'mf-list--legacy';
-
-                _.forEach(providers, function (provider) {
-                    var displayName = mfUtils.getProviderDisplayName(provider);
-                    var displayAddress = mfUtils.getProviderDisplayAddress(provider);
-
-                    var providerLi = document.createElement('li');
-                    providerLi.className = 'mf-list__item mf-list--byline';
-
-                    providerLi.innerHTML = '<p class="mf-list__element--primary">' + displayName + '</p><p class="mf-list__element--secondary">' + displayAddress + '</p>';
-
-                    providerLi.onclick = function () {
-                        selectSearchResult(displayName, provider, searchInfo);
-                    };
-                    providersList.appendChild(providerLi);
-                });
-                createConnectionResults.appendChild(providersList);
-            }
+        var headerContent = generateViewHeaders('Add a connection', addAConnectionValues.selectSubHeader, null);
+        createConnectionResults.appendChild(headerContent);
+        // only display results if we actually have results to display and if the results match
+        // the search criteria otherwise, tell the user no results
+        if (addAConnectionValues.filter === 'practice' && searchResults.practices && searchResults.practices.length) {
+            createPlacesListFromPractices(searchResults, createConnectionResults, searchInfo);
+        } else if (addAConnectionValues.filter === 'doctor' && searchResults.providers && searchResults.providers.length) {
+            createPeopleList(searchResults, createConnectionResults, searchInfo);
+        } else if (addAConnectionValues.filter === 'portal' && searchResults.portals) {
+            createPortalList(searchResults, createConnectionResults, searchInfo);
         } else {
             // no results
             var noResults = document.createElement('p');
-            noResults.innerHTML = 'No results found. Please search again'; // need better message?
+            noResults.innerHTML = 'No results found. Please search again';
             createConnectionResults.appendChild(noResults);
         }
 
         // set the back button
-        var button = document.getElementById('mfConnectBack');
-        button.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to search';
+        var button = getBackButton('Back to search');
         button.onclick = function () {
-            goToSearchForConnection('createConnectionResults');
+            showFindProviderView('createConnectionResults', null);
         };
 
         displayLoading(false);
-        $('#' + previousView).remove();
+        removePreviousView(previousView);
         document.getElementById('createConnectionContent').appendChild(createConnectionResults);
     }
 
@@ -481,10 +930,9 @@ var mfUtils = require('./mf-utils.js');
      *      - select portal if multiple portals
      *      - create connection step 2/enter credentials
      */
-    function selectSearchResult(searchSelectionName, directoryObj, searchInfo) {
+    function directorySearchResultClick(searchSelectionName, directoryObj, searchInfo) {
         displayLoading(true);
         MfConnect.prototype.invokeOnSelectProviderHandler(searchSelectionName, directoryObj);
-
         mfUtils.selectDirectoryObject(directoryObj)
             .then(function (params) {
                 params.directoryLocation.searchSelectionName = searchSelectionName;
@@ -495,9 +943,7 @@ var mfUtils = require('./mf-utils.js');
                 var backButton = document.getElementById('mfConnectBack');
                 backButton.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to search results';
 
-                if (params.nextStep === 'createConnectionSelectLocation') {
-                    goToSelectLocation('createConnectionResults', params);
-                } else if (params.nextStep === 'createConnectionSelectPortal') {
+                if (params.nextStep === 'createConnectionSelectPortal') {
                     goToSelectPortal('createConnectionResults', params);
                 } else if (params.nextStep === 'createConnectionEnterCredentials') {
                     goToEnterCredentials('createConnectionResults', params);
@@ -511,106 +957,18 @@ var mfUtils = require('./mf-utils.js');
             });
     }
 
-    /*
-     *  builds out the content for user to select location
-     *  if the original search selection was a practice or provider with multiple locations
-     *  params = {
-      *     directoryLocation {
-      *         searchSelection: sourceId
-      *         searchSelectionType: type
-      *         searchSelectionName: name
-      *     }
-      *     directoryInstance: practice or provider instance
-      *     nextStep: 'createConnectionSelectLocation'
-      *     profileId: id
-      * }
-     */
-    function goToSelectLocation(previousView, params) {
-        // hide error when screen first loads
-        document.getElementById('mfConnectError').style.display = 'none';
-
-        var directoryLocations = [];
-        var directoryInstance = params.directoryInstance;
-
-        var createConnectionDisambiguate = createHtmlElement('div', 'createConnectionSelectLocation', 'create-connection-select-location');
-
-        // add header
-        var header = document.createElement('h1');
-        header.innerHTML = 'Select a location';
-        createConnectionDisambiguate.appendChild(header);
-
-        // create 1 array with both offices and facilities
-        _.forEach(directoryInstance.offices, function (office) {
-            directoryLocations.push({locationInfo: office, locationType: 'OFFICE'});
-        });
-
-        _.forEach(directoryInstance.facilities, function (facility) {
-            directoryLocations.push({locationInfo: facility, locationType: 'FACILITY'});
-        });
-
-        var locationList = document.createElement('ul');
-        locationList.className = 'mf-list--legacy';
-
-        _.forEach(directoryLocations, function (location) {
-            var name = '';
-            var locationAddress = location.locationInfo.address;
-            if (location.locationInfo.name && location.locationInfo.name !== '') {
-                name = location.locationInfo.name;
-            } else if (locationAddress.address) {
-                name = locationAddress.address + ' Location';
-            } else {
-                name = locationAddress.city + ', ' + locationAddress.state + ' ' + locationAddress.zipcode + ' Location';
-            }
-            var address = (locationAddress.address ? locationAddress.address + ', ' : '') + locationAddress.city + ', ' + locationAddress.state + ' ' + locationAddress.zipcode;
-            var locationLi = document.createElement('li');
-            locationLi.className = 'mf-list__item mf-list--byline';
-
-            locationLi.innerHTML = '<p class="mf-list__element--primary">' + name + '</p><p class="mf-list__element--secondary">' + address + '</p>';
-
-            locationLi.onclick = function () {
-                selectDirectoryLocation(location, name, params);
-            };
-            locationList.appendChild(locationLi);
-        });
-        createConnectionDisambiguate.appendChild(locationList);
-
-        // set back button function
-        document.getElementById('mfConnectBack').onclick = function () {
-            getDirectorySearchResults('createConnectionSelectLocation', params.searchInfo);
+    function portalSearchResultClick(portal, searchInfo) {
+        var params = {
+            portal: portal,
+            profileId: mfConnectService.getMfConnectData().profileId,
+            searchInfo: searchInfo
         };
 
-        displayLoading(false);
-        $('#' + previousView).remove();
-        document.getElementById('createConnectionContent').appendChild(createConnectionDisambiguate);
-    }
+        // set the back button
+        var backButton = document.getElementById('mfConnectBack');
+        backButton.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to search results';
 
-    /*
-     *  when user selects location, the next step is either:
-     *      - select portal if multiple portals
-     *      - create connection step 2/enter credentials
-     *
-     *  location - single location
-     */
-    function selectDirectoryLocation(location, name, parameters) {
-        displayLoading(true);
-        MfConnect.prototype.invokeOnSelectLocation(name, location);
-
-        mfUtils.checkForMultiplePortals(location, parameters)
-            .then(function (params) {
-                params.directoryLocation.directoryLocationName = name;
-
-                if (params.nextStep === 'createConnectionSelectPortal') {
-                    goToSelectPortal('createConnectionSelectLocation', params);
-                } else if (params.nextStep === 'createConnectionEnterCredentials') {
-                    goToEnterCredentials('createConnectionSelectLocation', params);
-                } else {
-                    displayLoading(false);
-                    displayError('Error selecting directory location');
-                }
-            }, function (error) {
-                displayLoading(false);
-                displayError('Error selecting directory location.');
-            });
+        goToEnterCredentials('createConnectionResults', params, null, true);
     }
 
     /*
@@ -618,25 +976,24 @@ var mfUtils = require('./mf-utils.js');
      */
     function goToSelectPortal(previousView, params) {
         // hide error when screen first loads
-        document.getElementById('mfConnectError').style.display = 'none';
+        changeErrorVisibility(false);
 
         var portals = params.portalArray;
 
         var createConnectionSelectPortal = createHtmlElement('div', 'createConnectionSelectPortal', 'create-connection-select-portal');
 
-        // add header
-        var header = document.createElement('h1');
-        header.innerHTML = 'Select a portal';
-        createConnectionSelectPortal.appendChild(header);
+        var headerContent = generateViewHeaders('Add a connection', "Confirm your doctor's portal", "There are multiple portals associated with this doctor. Which one are you looking for?");
+        createConnectionSelectPortal.appendChild(headerContent);
 
         var portalList = document.createElement('ul');
         portalList.className = 'mf-list--legacy';
 
         _.forEach(portals, function (portal) {
-
-            var portalLi = createHtmlElement('li', undefined, 'mf-list__item');
-            portalLi.innerHTML = '<p class="mf-list__element--primary">' + portal.name + '</p>';
-
+            var portalLi = createHtmlElement('li', undefined, 'mf-list__item mf-list__element-left mf-list--byline');
+            portalLi.innerHTML = '<span class="mf-icon mf-icon__connections"></span>' +
+                '<span class="mf-icon mf-icon__chevron-right--hollow--exact--large mf-list__pull-right mf-color__dim"></span>' +
+                '<p class="mf-list__element--primary">' + portal.name + '</p>' +
+                '<p class="mf-list__element--secondary-padding">' + portal.primaryUrl + '</p>';
             portalLi.onclick = function () {
                 selectPortal(portal, params);
             };
@@ -650,7 +1007,7 @@ var mfUtils = require('./mf-utils.js');
         };
 
         displayLoading(false);
-        $('#' + previousView).remove();
+        removePreviousView(previousView);
         document.getElementById('createConnectionContent').appendChild(createConnectionSelectPortal);
     }
 
@@ -666,7 +1023,6 @@ var mfUtils = require('./mf-utils.js');
 
 
     function createCredentialsForm(updateCredentialsForm) {
-
         var usernameId = "connectionCredentials_username";
         var passwordId = "connectionCredentials_password";
         if (updateCredentialsForm) {
@@ -679,309 +1035,488 @@ var mfUtils = require('./mf-utils.js');
         var labelPassword = '<label class="mf-form__label" for="' + passwordId + '">Portal password<span class="mf-form__label--required">Required</span></label>';
         var inputPassword = '<input autocomplete="new-password" class="mf-form__input--text" type="password" id="' + passwordId + '" minlength="5" required>';
         var labelPasswordError = '<label class="mf-form__error" for="' + passwordId + '">Error text</label>';
-        return labelUsername + inputUsername + labelUsernameError + labelPassword + inputPassword + labelPasswordError;
+        var privacyStatement = '<div><span class="mf-icon mf-icon__privacy"></span><p class="privacy-statement">We take your privacy seriously</p></div>';
+        return labelUsername + inputUsername + labelUsernameError + labelPassword + inputPassword + labelPasswordError + privacyStatement;
     }
 
-    /*
-     *  Enter credentials to create new connection
-     */
-    function goToEnterCredentials(previousView, params) {
+    function createPortalDescriptionHeader(viewParams, params) {
+        // let the user know more information about the connection at this step
+        var html = '';
+        var name;
+        if (viewParams.selectedPortal && viewParams.selectedPortal.name) {
+            name = viewParams.selectedPortal.name;
+        } else {
+            name = params.directoryLocation.searchSelectionName;
+        }
+        // no existing connection (and we have a selectedPortal that is not IN_DEV and is not SUSPENDED)
+        if (!mfUtils.hasSuccessfulExistingConnection(viewParams)) {
+            if (viewParams.selectedPortal && viewParams.selectedPortal.name) {
+                html += 'Enter your username and password used when logging into ' + name + ' portal.';
+            } else {
+                html += 'Enter your username and password used when logging into the patient portal for ' + name + '.';
+            }
+        } else if (viewParams.existingConnection) {
+            html += "You have already connected to " + name + ". Please click 'Connect' to continue.";
+        }
+        // no selectedPortal or selectedPortal that is IN_DEV (placeholder portal)
+        if (viewParams.selectedPortal && viewParams.selectedPortal.isUnderDevelopment()) {
+            html += ' We\'re adding support for this provider\'s portal. We\'ll fetch your data once this portal is added.';
+        } else if (viewParams.selectedPortal && viewParams.selectedPortal.isSuspended()) {
+            html += ' This portal is experiencing connection issues. We\'ll fetch your data once that\'s fixed.';
+        } else if (viewParams.selectedPortal && viewParams.selectedPortal.isInactive()) {
+            html += ' This portal is no longer active. We will not be able to fetch your health data from it.';
+        }
+        return html;
+    }
+
+    function createPortalCredentialsView(divView, viewParams, params, previousView) {
+        var headerContent = generateViewHeaders('Add a connection', 'Create portal connection', createPortalDescriptionHeader(viewParams, params));
+
+        divView.appendChild(headerContent);
+
+        // create form
+        var credentialsForm = createHtmlElement('form', 'enterCredentialsForm', 'mf-form__group');
+        credentialsForm.setAttribute('autocomplete', 'off');
+        credentialsForm.name = 'enterCredentialsForm';
+
+        var credentialsFormHtml = '';
+        if (!mfUtils.hasSuccessfulExistingConnection(viewParams)) {
+            credentialsFormHtml = createCredentialsForm(false);
+        }
+        credentialsForm.innerHTML = credentialsFormHtml;
+
+        // create connect button
+        var createConnectionBtn = createHtmlElement('button', 'createConnectionBtn', 'button mf-cta__primary');
+        createConnectionBtn.type = 'button';
+        createConnectionBtn.innerHTML = 'Connect';
+        createConnectionBtn.onclick = function () {
+            createNewConnection('createConnectionEnterCredentials', params, viewParams);
+        };
+
+        credentialsForm.appendChild(createConnectionBtn);
+        divView.appendChild(credentialsForm);
+
+        // set back button
+        document.getElementById('mfConnectBack').onclick = function () {
+            if (params.portalArray) {
+                goToSelectPortal('createConnectionEnterCredentials', params);
+            } else if (addAConnectionValues.filter === 'portal') {
+                getPortalSearchResults('createConnectionEnterCredentials', params.searchInfo);
+            } else {
+                getDirectorySearchResults('createConnectionEnterCredentials', params.searchInfo);
+            }
+        };
+
+        displayLoading(false);
+        removePreviousView(previousView);
+        document.getElementById('createConnectionContent').appendChild(divView);
+    }
+
+    function goToEnterCredentials(previousView, params, onSuccess) {
         // hide error when screen first loads
-        document.getElementById('mfConnectError').style.display = 'none';
+        changeErrorVisibility(false);
         displayLoading(true);
         MfConnect.prototype.invokeOnSelectPortal(params.portal);
 
-        var createConnectionEnterCredentials = createHtmlElement('div', 'createConnectionEnterCredentials', 'create-connection-enter-credentials');
-
-        // get initial information before making connection
-        mfUtils.initializeStep2Content(params)
-            .then(function (initialInformation) {
-                // add header
-                var mfHeader = document.createElement('div');
-                mfHeader.className = 'item mf-itemnew-header';
-
-                // this block of code could be taken out and put into mfUtils
-                // if user selected a provider from search display their name as h1
-                if (initialInformation.directoryLocation.providers) {
-                    var searchSelectionName = document.createElement('h1');
-                    searchSelectionName.innerHTML = params.directoryLocation.searchSelectionName;
-                    mfHeader.appendChild(searchSelectionName);
-                }
-                // display practice, office, or facility name as h2
-                var directoryLocationName = document.createElement('h2');
-                var directoryLocationDisplayName = mfUtils.getDirectoryLocationDisplayName(initialInformation.directoryLocation);
-                if (directoryLocationDisplayName !== '') {
-                    directoryLocationName.innerHTML = directoryLocationDisplayName;
-                    mfHeader.appendChild(directoryLocationName);
+        var divView = createHtmlElement('div', 'createConnectionEnterCredentials', 'create-connection-enter-credentials');
+        var errorHandler = function (error) {
+            // set back button
+            // if coming from results
+            document.getElementById('mfConnectBack').onclick = function () {
+                if (addAConnectionValues.filter === 'portal') {
+                    getPortalSearchResults('createConnectionEnterCredentials', params.searchInfo);
                 } else {
-                    directoryLocationName.innerHTML = params.directoryLocation.searchSelectionName;
-                    mfHeader.appendChild(directoryLocationName);
-                }
-
-                // display directorLocation address
-                var address = initialInformation.directoryLocation.address;
-                var addressElement = document.createElement('p');
-                addressElement.innerHTML = (address.address ? address.address + ', ' : '') + address.city + ', ' + address.state + ' ' + address.zipcode;
-                mfHeader.appendChild(addressElement);
-
-                createConnectionEnterCredentials.appendChild(mfHeader);
-
-                // let the user know more information about the connection at this step
-                var secondaryHeader = createHtmlElement('p', undefined, 'connect-secondary-header');
-                var html = '';
-                // no existing connection (and we have a selectedPortal that is not IN_DEV and is not SUSPENDED)
-                if (!initialInformation.existingConnection /*&& (initialInformation.selectedPortal && !initialInformation.selectedPortal.isUnderDevelopment() && !initialInformation.selectedPortal.isSuspended())*/) {
-                    html += 'Enter the log in details you use to access this portal. ';
-                } else if (initialInformation.existingConnection /*&& !initialInformation.existingProvider*/) {
-                    html += 'One or more of your providers use this portal. ';
-                }
-                // no selectedPortal or selectedPortal that is IN_DEV (placeholder portal)
-                if (initialInformation.selectedPortal && initialInformation.selectedPortal.isUnderDevelopment()) {
-                    html += 'We\'re adding support for this provider. We\'ll fetch your data once this provider is added.';
-                } else if (initialInformation.selectedPortal && initialInformation.selectedPortal.isSuspended()) {
-                    html += 'This provider is experiencing connection issues. We\'ll fetch your data once that\'s fixed.';
-                }
-                secondaryHeader.innerHTML = html;
-                createConnectionEnterCredentials.appendChild(secondaryHeader);
-
-                // create form
-                var credentialsForm = createHtmlElement('form', 'enterCredentialsForm', 'mf-form__group');
-                credentialsForm.setAttribute("autocomplete", "off");
-                credentialsForm.name = 'enterCredentialsForm';
-
-                // innerHtml of form
-                var credentialsFormHtml = '';
-                if ((initialInformation.existingConnection && initialInformation.existingConnection.needsUserAuth()) || !initialInformation.existingConnection) {
-                    credentialsFormHtml = createCredentialsForm(false);
-                }
-                credentialsForm.innerHTML = credentialsFormHtml;
-
-                // create connect button
-                var createConnectionBtn = createHtmlElement('button', 'createConnectionBtn', 'button mf-cta__primary');
-                createConnectionBtn.type = 'button';
-                createConnectionBtn.innerHTML = 'Connect';
-                createConnectionBtn.onclick = function () {
-                    createNewConnection(params, initialInformation);
-                };
-                credentialsForm.appendChild(createConnectionBtn);
-
-                createConnectionEnterCredentials.appendChild(credentialsForm);
-
-                // if the location has a portal/selected portal, display that
-                if (params.portal) {
-                    var portalName = document.createElement('p');
-                    portalName.className = 'portal-info';
-                    portalName.innerHTML = 'This provider uses ' + params.portal.name + ' for their patient portal.';
-                    createConnectionEnterCredentials.appendChild(portalName);
-                }
-
-                // set back button
-                document.getElementById('mfConnectBack').onclick = function () {
                     getDirectorySearchResults('createConnectionEnterCredentials', params.searchInfo);
-                };
+                }
 
-                displayLoading(false);
-                $('#' + previousView).remove();
-                document.getElementById('createConnectionContent').appendChild(createConnectionEnterCredentials);
-            }, function (error) {
-                // set back button
-                // if coming from results
-                document.getElementById('mfConnectBack').onclick = function () {
-                    getDirectorySearchResults('createConnectionEnterCredentials', params.searchInfo);
-                };
-                displayLoading(false);
-                $('#' + previousView).remove();
-                document.getElementById('createConnectionContent').appendChild(createConnectionEnterCredentials);
-                displayError('Error loading data.');
-            });
+            };
+            displayLoading(false);
+            removePreviousView(previousView);
+            document.getElementById('createConnectionContent').appendChild(divView);
+            displayError('Error loading data.');
+        };
+        var successHandler = function (viewParams) {
+            createPortalCredentialsView(divView, viewParams, params, previousView);
+            if (onSuccess) {
+                onSuccess();
+            }
+        };
+        mfUtils.initializeStep2Content(params).then(successHandler, errorHandler);
     }
 
     /*
      * create a new connection with the entered information
      */
-    function createNewConnection(params, initialInfo) {
+
+    function createNewConnection(previousView, params, initialInfo) {
+        //initial info has existing connection
+        var connectionFields = {};
+        var successfulExistingConnection = mfUtils.hasSuccessfulExistingConnection(initialInfo);
+
+        if (!successfulExistingConnection) {
+            connectionFields = {
+                credentials: {
+                    username: document.getElementById('connectionCredentials_username').value,
+                    password: document.getElementById('connectionCredentials_password').value
+                }
+            };
+        }
+
+        if ((connectionFields.credentials && (!connectionFields.credentials.username || !connectionFields.credentials.password))) {
+            displayError('Please enter a username and password.');
+            // display error to user
+        } else {
+            displayLoading(true);
+            mfUtils.createNewConnection(initialInfo, params)
+                .then(function (connection) {
+                    MfConnect.prototype.invokeOnConnectProviderHandler(connection);
+                    // portal is not active so go directly to overview
+                    if (!params.portal || !params.portal.isActive()) {
+                        createConnectionOverviewContent('createConnectionEnterCredentials');
+                    } else {
+                        goToValidatingCredentials(previousView, connection, params.portal.name);
+                    }
+                }, function (error) {
+                    var errorMsg = '';
+                    if (error.status === 401) {
+                        // This is the response code when we *know* the credentials are invalid --
+                        // i.e., when they're connecting to a Medfusion portal.
+                        errorMsg = 'The username and password you provided were not accepted by this doctor\'s patient portal. Please verify credentials and try again.';
+                    } else {
+                        errorMsg = 'There was an error creating a new connection. Please verify that your username and password are correct.';
+                    }
+                    displayLoading(false);
+                    displayError(errorMsg);
+                });
+        }
+    }
+
+    function goToValidatingCredentials(previousView, connection, portalName) {
+        changeErrorVisibility(false);
         displayLoading(true);
 
-        mfUtils.createNewConnection(initialInfo, params)
-            .then(function (connection) {
-                MfConnect.prototype.invokeOnConnectProviderHandler(connection);
-                if (params.portal && params.portal.status === 'ACTIVE') {
-                    var connectionFields = {
-                        id: connection.id
-                    };
-                    // check connection status if it has a portal
-                    mfUtils.updateConnection(connectionFields)
-                        .then(function (result) {
-                            createConnectionOverviewContent('createConnectionEnterCredentials');
-                        }, function (error) {
-                            createConnectionOverviewContent('createConnectionEnterCredentials');
-                        });
-                } else {
-                    // a portal was created for this connection so just go to connection overview
-                    createConnectionOverviewContent('createConnectionEnterCredentials');
-                }
-            }, function (error) {
-                var errorMsg = '';
-                if (error.status === 401) {
-                    // This is the response code when we *know* the credentials are invalid --
-                    // i.e., when they're connecting to a Medfusion portal.
-                    errorMsg = 'The username and password you provided were not accepted by this doctor\'s patient portal. Please verify credentials and try again.';
-                } else {
-                    errorMsg = 'Error creating a new connection.';
-                }
-                displayLoading(false);
-                displayError(errorMsg);
-            });
+        var validatingCredentials = createHtmlElement('div', 'validatingCredentials', 'validating-credentials center-text');
+
+        var validatingIcon = createHtmlElement('span', null, 'mf-icon mf-icon__validating-credentials');
+        validatingCredentials.appendChild(validatingIcon);
+
+        var header = createHtmlElement('h2', null, null);
+        header.innerHTML = 'Validating credentials...';
+        validatingCredentials.appendChild(header);
+
+        var description = createHtmlElement('p', null, null);
+        description.innerHTML = 'Please wait for us to validate your credentials before closing this window.';
+        validatingCredentials.appendChild(description);
+
+        var newConnection = createHtmlElement('ul', null, 'mf-list--legacy');
+
+        var newConnectionItem = createHtmlElement('li', null, 'mf-list__item mf-list--byline');
+        newConnectionItem.innerHTML = '<span class="mf-icon mf-icon__refreshing-green mf-list__pull-right"></span>' +
+            '<p class="mf-list__element--primary">' + portalName + '</p>' +
+            '<p class="mf-list__element--secondary">Validating credentials...</p>';
+
+        newConnection.appendChild(newConnectionItem);
+        validatingCredentials.appendChild(newConnection);
+
+        var waitText = createHtmlElement('p', null, 'validating-creds-text');
+        waitText.innerHTML = 'This may take a few minutes';
+        validatingCredentials.appendChild(waitText);
+
+        // if the credential check lasts 5 minutes, return to the connection management page
+        var timeout = window.setTimeout(function () {
+            window.clearTimeout(timeout);
+	        window.clearInterval(interval);
+            createConnectionOverviewContent('validatingCredentials');
+        }, 180000);
+
+        // check to see if the credentials were valid or invalid
+        var interval = window.setInterval(function () {
+            mfUtils.findConnectionById(connection)
+                .then(function (extendedConnection) {
+                    if (extendedConnection.hasEverBeenSuccessful()) {
+                        window.clearInterval(interval);
+                        window.clearTimeout(timeout);
+                        goToSuccessfullyConnected('validatingCredentials', extendedConnection, portalName);
+                    } else if (!extendedConnection.hasEverBeenSuccessful() && !extendedConnection.isRetrieving() && extendedConnection.errorNeedsUserAuth()) {
+                        window.clearInterval(interval);
+                        window.clearTimeout(timeout);
+                        goToConnectionDetails('validatingCredentials', extendedConnection);
+                    } else if (!extendedConnection.hasEverBeenSuccessful() && !extendedConnection.isRetrieving()) {
+                        window.clearInterval(interval);
+                        window.clearTimeout(timeout);
+                        createConnectionOverviewContent('validatingCredentials');
+                    }
+                });
+        }, 15000);
+
+        var backButton = document.getElementById('mfConnectBack');
+        backButton.style.display = 'none';
+        backButton.innerHTML = '';
+
+        displayLoading(false);
+        removePreviousView(previousView);
+        document.getElementById('createConnectionContent').appendChild(validatingCredentials);
+    }
+
+    function goToSuccessfullyConnected(previousView, connection, portalName) {
+        changeErrorVisibility(false);
+        displayLoading(true);
+
+        var successfullyConnected = createHtmlElement('div', 'successfullyConnected', 'successfully-connected center-text');
+
+        var successIcon = createHtmlElement('span', null, 'mf-icon mf-icon__connected-successful');
+        successfullyConnected.appendChild(successIcon);
+
+        var header = createHtmlElement('h2', null, null);
+        header.innerHTML = 'Successfully connected';
+        successfullyConnected.appendChild(header);
+
+        var description = createHtmlElement('p', null, null);
+        description.innerHTML = 'Thanks for waiting around! We are ready to add more connections.';
+        successfullyConnected.appendChild(description);
+
+        var newConnection = createHtmlElement('ul', null, 'mf-list--legacy');
+
+        var newConnectionItem = createHtmlElement('li', null, 'mf-list__item mf-list--byline');
+        newConnectionItem.innerHTML = '<span class="mf-icon mf-icon__connected-small mf-list__pull-right"></span>' +
+            '<p class="mf-list__element--primary">' + portalName + '</p>' +
+            '<p class="mf-list__element--secondary">Connected</p>';
+
+        newConnection.appendChild(newConnectionItem);
+        successfullyConnected.appendChild(newConnection);
+
+        var timeout = window.setTimeout(function () {
+            window.clearTimeout(timeout);
+            createConnectionOverviewContent('successfullyConnected');
+        }, 4000);
+
+        displayLoading(false);
+        removePreviousView(previousView);
+        document.getElementById('createConnectionContent').appendChild(successfullyConnected);
     }
 
     /*
      *  if provider needs an update, should show edit view with delete button,
      *  otherwise just show update and delete button
      */
-    function goToProviderDetails(previousView, provider, connections) {
+    function goToConnectionDetails(previousView, connection) {
         // hide error when screen first loads
-        document.getElementById('mfConnectError').style.display = 'none';
+        changeErrorVisibility(false);
         displayLoading(true);
 
         // possible status
-        // isCompleted: successfully linked and recieving data
-        // needsUserAuth: we can't access this connection. Please verify and re-enter your login details.
-        // needsUserInteraction: Please log in and accept the organization's Terms of Service.
-        // hasInternalError: Unable to sync your account data. Please check back shortly.
-        // hasPortalError: This organization cannot be synced at this time. Please check back later.
-        // hasAnyError:
+        // isConnected: successfully linked and recieving data
+        // errorNeedsUserAuth: we can't access this connection. Please verify and re-enter your login details.
+        // errorNeedsUserInteraction: Please log in and accept the organization's Terms of Service.
+        // hasUnknownError: Unable to sync your account data. Please check back shortly.
         // isRefreshing: we're currently checking the credentials of this connection.
-        // portal.isUnderDevelopment: We're adding support for this provider. We'll fetch your data once this provider is added.
-        // portal.isSuspended: This provider is experiencing connection issues. We'll fetch your data once that's fixed.
+        // isUnderDevelopment: We're adding support for this provider. We'll fetch your data once this provider is added.
+        // isSuspended: This provider is experiencing connection issues. We'll fetch your data once that's fixed.
+        // isPending: This is a pending portal. We'll fetch your data once this provider is added.
 
-        var providerDetails = createHtmlElement('div', 'providerDetails', 'provider-details');
+        var connectionDetails = createHtmlElement('div', 'connectionDetails', 'connection-details');
+
+        var bannerStyle = mfUtils.getStatusStyleDetails(connection);
+
+        var gradientStyle = '';
+        if (bannerStyle && bannerStyle.gradientStyle) {
+            gradientStyle += bannerStyle.gradientStyle;
+        }
+
+        var bannerIcon = '';
+        if (bannerStyle && bannerStyle.bannerIcon) {
+            bannerIcon += bannerStyle.bannerIcon;
+        }
+
+        var connectionDetailMessage = '';
+        if (bannerStyle && bannerStyle.connectionDetailMessage) {
+            connectionDetailMessage += bannerStyle.connectionDetailMessage;
+        }
 
         // add header
-        var header = document.createElement('h1');
-        header.innerHTML = provider.nameAlias;
-        providerDetails.appendChild(header);
+        var statusBannerHeader = createHtmlElement('ul', 'connectionStatusHeader', 'mf-list--legacy mf-roofless mf-gradient ' + gradientStyle);
+
+        var statusBannerItem = createHtmlElement('li', null, 'mf-list__item mf-borderless mf-list--byline mf-list__element-left');
+        statusBannerItem.innerHTML = '<span class="mf-icon-header ' + bannerIcon + '"></span>' +
+            '<p class="mf-list__element--primary-header">Connection status</p>' +
+            '<p class="mf-list__element--secondary-header">' + connectionDetailMessage + '</p>';
+
+        statusBannerHeader.appendChild(statusBannerItem);
+        connectionDetails.appendChild(statusBannerHeader);
+
+        var header = createHtmlElement('p', null, 'no-margin-bottom small-text');
+        header.innerHTML = 'MANAGE PORTAL CONNECTION';
+        connectionDetails.appendChild(header);
+
+        var portalNameHeader = document.createElement('h1');
+        portalNameHeader.innerHTML = connection.associatedPortal.name;
+        connectionDetails.appendChild(portalNameHeader);
 
         // set the back button
         var backButton = document.getElementById('mfConnectBack');
         backButton.style.display = 'block';
-        backButton.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to providers';
+        backButton.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to connections';
         backButton.onclick = function () {
-            createConnectionOverviewContent('providerDetails');
+            createConnectionOverviewContent('connectionDetails');
         };
         document.getElementById('mfButtonHolder').className = 'header-bottom-border';
 
-        var selectedConnection = mfUtils.findConnectionForProvider(provider, connections);
-
-        var status = createHtmlElement('p', 'connectionStatusText', 'connection-status-info');
-        status.innerHTML = mfUtils.getConnectionStatusText(selectedConnection);
-        providerDetails.appendChild(status);
-
-        // if some error, tell the user something is wrong and show update login form if needed
-        // update form
-        var updateLoginForm = createHtmlElement('form', 'updateLoginForm', 'mf-form__group');
-        updateLoginForm.setAttribute("autocomplete", "off");
-        updateLoginForm.name = 'updateLoginForm';
-        updateLoginForm.style.display = 'none';
-        updateLoginForm.innerHTML = createCredentialsForm(true);
-
-        // update connect button
-        var updateConnectionBtn = createHtmlElement('button', 'updateConnectionBtn', 'button mf-cta__primary');
-        updateConnectionBtn.type = 'button';
-        updateConnectionBtn.innerHTML = 'Update';
-        updateConnectionBtn.onclick = function () {
-            updateConnection(provider, selectedConnection);
-        };
-        updateLoginForm.appendChild(updateConnectionBtn);
-
         // begin button list
-        var list = document.createElement('ul');
-        list.className = 'mf-list--legacy';
+        var list = createHtmlElement('ul', null, 'mf-list--legacy');
 
-        var updateProviderBtn = document.createElement('li');
-        updateProviderBtn.className = 'mf-list__item mf-list__element-left';
-        updateProviderBtn.innerHTML = '<span class="mf-icon mf-icon__edit"></span><p class="mf-list__element--primary">Update sign in details</p>';
-        updateProviderBtn.onclick = function () {
-            document.getElementById('updateLoginForm').style.display = 'block';
-            this.style.display = 'none';
-        };
-        // only show form if update button is clicked or there is an error
-        if (selectedConnection.needsUserAuth()) {
-            updateLoginForm.style.display = 'block';
-            updateProviderBtn.style.display = 'none';
+        // refresh connection
+        var refreshConnectionItem = createHtmlElement('li', null, 'mf-list__item mf-list--byline mf-list__element-left');
+        if (connection.associatedPortal.status === 'ACTIVE' && (connection.isConnected() || connection.hasUnknownError())) {
+            refreshConnectionItem.innerHTML = '<span class="mf-icon mf-icon__refresh"></span>' +
+                '<button id="mfRefreshButton" class="mf-btn mf-list__pull-right">Go</button>' +
+                '<p class="mf-list__element--primary">Refresh connection</p>' +
+                '<p class="mf-list__element--secondary">Download new records</p>';
+        } else {
+            refreshConnectionItem.innerHTML = '<span class="mf-icon mf-icon__refresh mf-color__dim"></span>' +
+                '<button id="mfRefreshButton" class="mf-btn mf-list__pull-right" disabled="disabled">Go</button>' +
+                '<p class="mf-list__element--primary">Refresh connection</p>' +
+                '<p class="mf-list__element--secondary">Download new records</p>';
         }
-        providerDetails.appendChild(updateLoginForm);
+        list.appendChild(refreshConnectionItem);
+
+        // update connection
+        var updateProviderBtn = null;
+        if (connection.errorNeedsUserAuth()) {
+            updateProviderBtn = createHtmlElement('li', null, 'mf-list__item mf-list--byline mf-list__element-left');
+            updateProviderBtn.innerHTML = '<span class="mf-icon mf-icon__edit"></span>' +
+                '<span class="mf-icon mf-icon__invalid-small mf-list__pull-right"></span>' +
+                '<p class="mf-list__element--primary">Update sign in details</p>' +
+                '<p class="mf-list__element--secondary-negative">Update your information</p>';
+        } else {
+            updateProviderBtn = createHtmlElement('li', null, 'mf-list__item mf-list__element-left');
+            updateProviderBtn.innerHTML = '<span class="mf-icon mf-icon__edit"></span>' +
+                '<span class="mf-icon mf-icon__chevron-right--hollow--exact--large mf-list__pull-right mf-color__dim"></span>' +
+                '<p class="mf-list__element--primary">Update sign in details</p>';
+        }
+
+        updateProviderBtn.onclick = function () {
+            goToUpdateCredentials('connectionDetails', connection);
+        };
         list.appendChild(updateProviderBtn);
 
-        // only want to allow users to refresh if the portal is ACTIVE
-        if (selectedConnection.associatedPortal.status === 'ACTIVE') {
-            var refreshConnectionBtn = document.createElement('li');
-            refreshConnectionBtn.className = 'mf-list__item mf-list__element-left';
-            refreshConnectionBtn.innerHTML = '<span class="mf-icon mf-icon__refresh"></span><p class="mf-list__element--primary">Refresh connection</p>';
-            refreshConnectionBtn.onclick = function () {
-                refreshConnection(provider, selectedConnection);
+        // launch Portal
+        if (connection.associatedPortal.status === 'ACTIVE') {
+            var launchPortalBtn = null;
+            if (connection.errorNeedsUserInteraction() || connection.errorNeedsSecurityQuestions()) {
+                launchPortalBtn = createHtmlElement('li', null, 'mf-list__item mf-list--byline mf-list__element-left');
+                launchPortalBtn.innerHTML = '<span class="mf-icon mf-icon__connections"></span>' +
+                    '<span class="mf-icon mf-icon__invalid-small mf-list__pull-right"></span>' +
+                    '<p class="mf-list__element--primary">Launch portal</p>' +
+                    '<p class="mf-list__element--secondary-negative">' + bannerStyle.connectionManagementMessage + '</p>';
+            } else {
+                launchPortalBtn = createHtmlElement('li', null, 'mf-list__item mf-list__element-left');
+                launchPortalBtn.innerHTML = '<span class="mf-icon mf-icon__connections"></span>' +
+                    '<span class="mf-icon mf-icon__chevron-right--hollow--exact--large mf-list__pull-right mf-color__dim"></span>' +
+                    '<p class="mf-list__element--primary">Launch portal</p>';
+            }
+
+            launchPortalBtn.onclick = function () {
+                goToLaunchPortalView('connectionDetails', connection);
             };
-            list.appendChild(refreshConnectionBtn);
+
+            list.appendChild(launchPortalBtn);
         }
 
-        var deleteProviderBtn = document.createElement('li');
-        deleteProviderBtn.className = 'mf-list__item mf-list__element-left';
-        deleteProviderBtn.innerHTML = '<span class="mf-icon mf-icon__x"></span><p class="mf-list__element--primary">Delete this provider</p>';
+        // delete connection
+        var deleteProviderBtn = createHtmlElement('li', null, 'mf-list__item mf-list__element-left');
+        deleteProviderBtn.innerHTML = '<span class="mf-icon mf-icon__trash"></span>' +
+            '<span class="mf-icon mf-icon__chevron-right--hollow--exact--large mf-list__pull-right mf-color__dim"></span>' +
+            '<p class="mf-list__element--primary">Delete this connection</p>';
         deleteProviderBtn.onclick = function () {
-            document.getElementById('deleteConfirmationSection').style.display = 'block';
+            goToDeleteConnection('connectionDetails', connection);
         };
         list.appendChild(deleteProviderBtn);
-        providerDetails.appendChild(list);
-
-        var deleteConfirmationSection = createHtmlElement('div', 'deleteConfirmationSection', undefined);
-
-        var deleteConfirmation = document.createElement('p');
-        deleteConfirmation.innerHTML = 'Are you sure you want to delete this provider?';
-        deleteConfirmationSection.appendChild(deleteConfirmation);
-
-        var confirmDelete = createHtmlElement('button', undefined, 'mf-btn');
-        confirmDelete.innerHTML = 'Delete';
-        confirmDelete.onclick = function () {
-            deleteProviderConnection(provider, selectedConnection);
-        };
-        confirmDelete.style.display = 'inline-block';
-        deleteConfirmationSection.appendChild(confirmDelete);
-
-        var cancelDelete = createHtmlElement('a', undefined, 'mf-cancel-delete');
-        cancelDelete.innerHTML = 'Cancel';
-        cancelDelete.onclick = function () {
-            document.getElementById('deleteConfirmationSection').style.display = 'none';
-        };
-        deleteConfirmationSection.appendChild(cancelDelete);
-        deleteConfirmationSection.style.display = 'none';
-        providerDetails.appendChild(deleteConfirmationSection);
+        connectionDetails.appendChild(list);
 
         displayLoading(false);
-        $('#' + previousView).remove();
-        document.getElementById('createConnectionContent').appendChild(providerDetails);
+        removePreviousView(previousView);
+        document.getElementById('createConnectionContent').appendChild(connectionDetails);
 
-        // visit site??
+        document.getElementById('mfRefreshButton').onclick = function () {
+            refreshConnection(connection);
+        };
     }
 
-    function refreshConnection(provider, selectedConnection) {
+    function refreshConnection(connection) {
         displayLoading(true);
-        var connectionFields = {
-            id: selectedConnection.id
-        };
-        mfUtils.updateConnection(connectionFields)
+        mfUtils.updateConnection(connection)
             .then(function (connection) {
-                MfConnect.prototype.invokeProviderRefreshEvent(provider, connection);
+                MfConnect.prototype.invokeProviderRefreshEvent(connection);
                 displayLoading(false);
-                var statusText = document.getElementById('connectionStatusText');
-                statusText.innerHTML = connection.statusText;
             }, function (error) {
                 displayLoading(false);
                 displayError('Error updating connection.');
             });
     }
 
-    function updateConnection(provider, existingConnection) {
+    function goToUpdateCredentials(previousView, connection) {
+        // hide error when screen first loads
+        changeErrorVisibility(false);
+
+        var updateCredentialsView = createHtmlElement('div', 'updateCredentialsView', 'update-credentials');
+
+        // header
+        var headerContent = document.createElement('div');
+
+        var header = document.createElement('h1');
+        header.innerHTML = 'Update sign in details';
+        headerContent.appendChild(header);
+
+        if (connection.errorNeedsUserAuth()) {
+            var invalidInfoAlert = createHtmlElement('ul', null, 'mf-list--legacy mf-negative-alert');
+            invalidInfoAlert.innerHTML = '<li class="mf-list__item mf-list__element-left">' +
+                '<span class="mf-icon mf-icon__invalid-header"></span>' +
+                '<p class="mf-list__element--primary-header-negative">Invalid information</p>' +
+                '<p class="mf-list__element--secondary-header-negative">Please update your portal username and password</p></li>';
+            headerContent.appendChild(invalidInfoAlert);
+        }
+
+        var subHeader = document.createElement('h2');
+        subHeader.innerHTML = 'Updating your portal connection';
+        headerContent.appendChild(subHeader);
+
+        var paragraph = document.createElement('p');
+        paragraph.innerHTML = 'Enter your username and password used when logging into ' + connection.associatedPortal.name;
+        headerContent.appendChild(paragraph);
+
+        updateCredentialsView.appendChild(headerContent);
+
+        // update credentials form
+        var updateLoginForm = createHtmlElement('form', 'updateLoginForm', 'mf-form__group');
+        updateLoginForm.setAttribute('autocomplete', 'off');
+        updateLoginForm.name = 'updateLoginForm';
+        updateLoginForm.innerHTML = createCredentialsForm(true);
+
+        // update credentials submit button
+        var updateConnectionBtn = createHtmlElement('button', 'updateConnectionBtn', 'button mf-cta__primary');
+        updateConnectionBtn.type = 'button';
+        updateConnectionBtn.innerHTML = 'Update';
+        updateConnectionBtn.onclick = function () {
+            updateConnection(connection);
+        };
+        updateLoginForm.appendChild(updateConnectionBtn);
+        updateCredentialsView.appendChild(updateLoginForm);
+
+        // set the back button
+        var backButton = document.getElementById('mfConnectBack');
+        backButton.style.display = 'block';
+        backButton.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to manage connection';
+        backButton.onclick = function () {
+            goToConnectionDetails('updateCredentialsView', connection);
+        };
+        document.getElementById('mfButtonHolder').className = 'header-bottom-border';
+
+        removePreviousView(previousView);
+        document.getElementById('createConnectionContent').appendChild(updateCredentialsView);
+    }
+
+    function updateConnection(connection) {
         var connectionFields = {
-            id: existingConnection.id,
             credentials: {
                 username: document.getElementById('update_username').value,
                 password: document.getElementById('update_password').value
@@ -993,14 +1528,12 @@ var mfUtils = require('./mf-utils.js');
             // display error to user
         } else {
             displayLoading(true);
-            mfUtils.updateConnection(connectionFields, existingConnection)
+            connection.credentials = connectionFields.credentials;
+            mfUtils.updateConnection(connection)
                 .then(function (connection) {
-                    MfConnect.prototype.invokeProviderUpdateEvent(provider, connection);
+                    MfConnect.prototype.invokeProviderUpdateEvent(connection);
                     displayLoading(false);
-                    var statusText = document.getElementById('connectionStatusText');
-                    statusText.innerHTML = connection.statusText;
-                    // display success to user?
-                    createConnectionOverviewContent('providerDetails');
+                    goToConnectionDetails('updateCredentialsView', connection);
                 }, function (error) {
                     displayLoading(false);
                     displayError('Error updating connection.');
@@ -1008,21 +1541,314 @@ var mfUtils = require('./mf-utils.js');
         }
     }
 
+    function goToLaunchPortalView(previousView, connection) {
+        // hide error when screen first loads
+        changeErrorVisibility(false);
+
+        var launchPortalView = createHtmlElement('div', 'launchPortalView', 'launch-portal center-text');
+
+        // header
+        var headerContent = document.createElement('div');
+
+        var portalIcon = createHtmlElement('span', null, 'mf-icon mf-icon__connection-large');
+        headerContent.appendChild(portalIcon);
+
+        var header = document.createElement('h2');
+        header.innerHTML = 'Log in to your portal to fix your account';
+        headerContent.appendChild(header);
+
+        launchPortalView.appendChild(headerContent);
+
+        var selectedConnection = createHtmlElement('ul', null, 'mf-list--legacy mf-roofless inside-border');
+
+        var selectedConnectionItem = createHtmlElement('li', null, 'mf-list__item mf-list--byline mf-borderless-center');
+        selectedConnectionItem.innerHTML = '<p class="mf-list__element--primary">' + connection.associatedPortal.name + '</p>' +
+            '<p class="mf-list__element--secondary">' + connection.associatedPortal.primaryUrl + '</p>';
+
+        selectedConnection.appendChild(selectedConnectionItem);
+        launchPortalView.appendChild(selectedConnection);
+
+        var buttonHeader = createHtmlElement('p', null, 'semibold');
+        buttonHeader.innerHTML = 'Return and refresh connection';
+        launchPortalView.appendChild(buttonHeader);
+
+        var buttonBreak = createHtmlElement('ul', null, 'mf-list--legacy');
+        launchPortalView.appendChild(buttonBreak);
+
+        var cancelBtn = createHtmlElement('button', null, 'mf-btn mf-naked-margin');
+        cancelBtn.innerHTML = 'Cancel';
+        cancelBtn.onclick = function () {
+            goToConnectionDetails('launchPortalView', connection);
+        };
+        cancelBtn.style.display = 'inline-block';
+        launchPortalView.appendChild(cancelBtn);
+
+        var launchPortalBtn = createHtmlElement('button', null, 'mf-btn');
+        launchPortalBtn.innerHTML = 'Launch website';
+        launchPortalBtn.onclick = function () {
+            window.open(connection.associatedPortal.primaryUrl, '_blank');
+            goToConnectionDetails('launchPortalView', connection);
+        };
+        launchPortalBtn.style.display = 'inline-block';
+        launchPortalView.appendChild(launchPortalBtn);
+
+        // set the back button
+        var backButton = document.getElementById('mfConnectBack');
+        backButton.style.display = 'block';
+        backButton.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to manage connection';
+        backButton.onclick = function () {
+            goToConnectionDetails('launchPortalView', connection);
+        };
+        document.getElementById('mfButtonHolder').className = 'header-bottom-border';
+
+        removePreviousView(previousView);
+        document.getElementById('createConnectionContent').appendChild(launchPortalView);
+    }
+
+    function goToDeleteConnection(previousView, connection) {
+        // hide error when screen first loads
+        changeErrorVisibility(false);
+
+        var deleteConfirmationSection = createHtmlElement('div', 'deleteConfirmationSection', 'delete-connection center-text mf-negative-alert-border');
+
+        // header
+        var headerContent = document.createElement('div');
+
+        var deleteIcon = createHtmlElement('span', null, 'mf-icon mf-icon__trash-large mf-icon-large-margin');
+        headerContent.appendChild(deleteIcon);
+
+        var header = createHtmlElement('h1', null, 'negative');
+        header.innerHTML = 'Are you sure you want to delete this connection';
+        headerContent.appendChild(header);
+
+        deleteConfirmationSection.appendChild(headerContent);
+
+        var selectedConnection = createHtmlElement('ul', null, 'mf-list--legacy mf-roofless inside-border');
+
+        var selectedConnectionItem = createHtmlElement('li', null, 'mf-list__item mf-list--byline mf-border-negative');
+        selectedConnectionItem.innerHTML = '<p class="mf-list__element--primary">' + connection.associatedPortal.name + '</p>' +
+            '<p class="mf-list__element--secondary">' + connection.associatedPortal.primaryUrl + '</p>';
+
+        selectedConnection.appendChild(selectedConnectionItem);
+        deleteConfirmationSection.appendChild(selectedConnection);
+
+        var confirmDelete = createHtmlElement('button', null, 'mf-btn mf-cta--danger');
+        confirmDelete.innerHTML = 'Delete connection';
+        confirmDelete.onclick = function () {
+            deleteSelectedConnection(connection);
+        };
+        confirmDelete.style.display = 'inline-block';
+        deleteConfirmationSection.appendChild(confirmDelete);
+
+        var cancelDelete = createHtmlElement('button', null, 'mf-btn');
+        cancelDelete.innerHTML = 'Cancel';
+        cancelDelete.onclick = function () {
+            goToConnectionDetails('deleteConfirmationSection', connection);
+        };
+        cancelDelete.style.display = 'inline-block';
+        deleteConfirmationSection.appendChild(cancelDelete);
+
+        // set the back button
+        var backButton = document.getElementById('mfConnectBack');
+        backButton.style.display = 'block';
+        backButton.innerHTML = '<span class="mf-icon mf-icon__chevron-left--hollow--exact mf-color__action"></span>Back to manage connection';
+        backButton.onclick = function () {
+            goToConnectionDetails('deleteConfirmationSection', connection);
+        };
+        document.getElementById('mfButtonHolder').className = 'header-bottom-border';
+
+        removePreviousView(previousView);
+        document.getElementById('createConnectionContent').appendChild(deleteConfirmationSection);
+    }
+
     /*
-     *  delete provider and route back to connection overview
+     *  delete connection and route back to connection overview
      */
-    function deleteProviderConnection(provider, connection) {
+    function deleteSelectedConnection(connection) {
         displayLoading(true);
-        MfConnect.prototype.api.deleteProviderConnection(provider.connectionId, provider.providerId)
+        MfConnect.prototype.api.deleteConnection(connection.profileId, connection.id)
             .then(function (response) {
                 // go back to connection view wiht message
-                MfConnect.prototype.invokeProviderDeleteEvent(provider, connection);
-                createConnectionOverviewContent('providerDetails');
+                MfConnect.prototype.invokeProviderDeleteEvent(connection);
+                createConnectionOverviewContent('deleteConfirmationSection');
             }, function (error) {
                 displayLoading(false);
                 // display error
                 displayError('Error deleting provider.');
             });
+    }
+
+    function showRecommendedPortalsError() {
+        displayLoading(false);
+        displayError('Error loading recommended portals.');
+    }
+
+    function createListOfProvidersErrorHandler(connectionOverview, error) {
+        displayLoading(false);
+        document.getElementById('createConnectionContent').appendChild(connectionOverview);
+        displayError('Error loading connections.');
+    }
+
+    function createConnectionItem(connection) {
+        var item = createHtmlElement('li', undefined, 'mf-list__item mf-list--byline');
+
+        item.innerHTML = '';
+
+        // show status icon based on connection status
+        var styleDetails = mfUtils.getStatusStyleDetails(connection);
+
+        if (styleDetails && styleDetails.managementPageIcon) {
+            item.innerHTML += '<span class="mf-icon ' + styleDetails.managementPageIcon + ' mf-list__pull-right"></span>';
+        }
+
+        var connectionManagementMessage = '';
+        if (styleDetails && styleDetails.connectionManagementMessage) {
+            connectionManagementMessage += styleDetails.connectionManagementMessage;
+        }
+
+        var connectionManagementSecondaryStyle = '';
+        if (styleDetails && styleDetails.connectionManagementSecondaryStyle) {
+            connectionManagementSecondaryStyle += styleDetails.connectionManagementSecondaryStyle;
+        }
+
+        item.innerHTML += '<p class="mf-list__element--primary mf-list__item-color-brand">' + connection.associatedPortal.name + '</p><p class="' + connectionManagementSecondaryStyle + '">' + connectionManagementMessage + '</p>';
+
+        item.onclick = function () {
+            goToConnectionDetails('connectionOverview', connection);
+        };
+        return item;
+    }
+
+    function createListOfProviders(connectionOverview, profileData) {
+        var connectionsListHeader = createHtmlElement('h3', null, 'mf-list-header');
+        connectionsListHeader.innerHTML = 'Manage your portal connections';
+
+        // create list of providers/connections
+        var connectionsList = createHtmlElement('ul', null, 'mf-list--legacy');
+
+        if (profileData.connectionsList.length === 0) {
+            var item = createHtmlElement('li', null, 'mf-list__item mf-list__element-left');
+            item.innerHTML = '<span class="mf-icon mf-icon__add"></span><p class="mf-list__element--primary">Add a connection</p>';
+            item.onclick = function () {
+                goToSearchForConnection('connectionOverview');
+            };
+            connectionsList.appendChild(item);
+        } else {
+            _.forEach(profileData.connectionsList, function (connection) {
+                connectionsList.appendChild(createConnectionItem(connection));
+            });
+        }
+
+        connectionOverview.appendChild(connectionsListHeader);
+        connectionOverview.appendChild(connectionsList);
+
+        // remove the back button
+        document.getElementById('mfConnectBack').style.display = 'none';
+        document.getElementById('mfButtonHolder').removeAttribute('class');
+
+        displayLoading(false);
+        document.getElementById('createConnectionContent').appendChild(connectionOverview);
+    }
+
+    function showBackToConnectionsLink(currentView) {
+        var button = getBackButton('Skip');
+        button.onclick = function () {
+            createConnectionOverviewContent(currentView);
+        };
+    }
+
+    function showBackToFindByIdLink(currentView, recommendedPortals) {
+        var button = getBackButton('Back to search options');
+        button.onclick = function () {
+            showFindById(currentView, recommendedPortals);
+        };
+    }
+
+    function showPreSelectedPortal(preSelectedPortal, previousView, recommendedPortals, onOpen) {
+        displayLoading(true);
+
+        var portalId = preSelectedPortal.portalId;
+        var showCredentialsForm = function (portal) {
+
+            var params = {"portal": portal, "profileId": mfConnectService.getProfileId()};
+            if (preSelectedPortal.directoryLocation) {
+                params["directoryLocation"] = preSelectedPortal.directoryLocation;
+            }
+
+            goToEnterCredentials(previousView, params, function () {
+                if (onOpen) {
+                    showBackToConnectionsLink('createConnectionEnterCredentials', recommendedPortals);
+                } else {
+                    showBackToFindByIdLink('createConnectionEnterCredentials', recommendedPortals);
+                }
+            });
+        };
+        var errorHandler = function (error) {
+            if (error.status && error.status === 404) {
+                createConnectionOverviewContent();
+                return;
+            }
+            displayLoading(false);
+            displayError('Error showing preselected portal');
+        };
+
+        var success = function (connections) {
+            var isAlreadyConnected = connections.filter(function (connection) {
+                return connection.portalId === JSON.stringify(portalId);
+            }).length > 0;
+
+            if (isAlreadyConnected) {
+                createConnectionOverviewContent();
+                return;
+            }
+            mfConnectService.findPortalById(portalId).then(showCredentialsForm, errorHandler);
+        };
+        mfConnectService.findConnectionsForProfile(mfConnectService.getProfileId()).then(success, errorHandler);
+    }
+
+    function showRecommendedPortals(recommendedPortals) {
+        if (recommendedPortals.length === 0) {
+            return;
+        }
+
+        var container = createHtmlElement('div', null, null);
+
+        var space = document.createElement('br');
+        container.appendChild(space);
+
+        var header = createHtmlElement('h3', null, 'mf-list-header');
+        header.innerHTML = 'Top recommended portals';
+        container.appendChild(header);
+
+        var list = createHtmlElement('ul', 'recommended-portals-list', 'mf-list--legacy');
+        _.forEach(recommendedPortals, function (portal) {
+            list.appendChild(createRecommendedPortalItem(portal, recommendedPortals));
+        });
+        container.appendChild(list);
+
+        document.getElementById('createFindById').appendChild(container);
+    }
+
+    function createRecommendedPortalItem(recommendedPortal, recommendedPortals) {
+        var item = createHtmlElement('li', undefined, 'mf-list__item');
+        item.innerHTML += '<span class="mf-icon mf-icon__chevron-right--hollow--exact--large mf-list__pull-right mf-color__dim"></span><p class="mf-list__element--primary">' + recommendedPortal.portal.name + '</p>';
+
+        item.onclick = function () {
+            var portal = recommendedPortalToPreSelectedPortal(recommendedPortal);
+            showPreSelectedPortal(portal, 'createFindById', recommendedPortals);
+        };
+        return item;
+    }
+
+    function recommendedPortalToPreSelectedPortal(recommendedPortal) {
+        var portal = {};
+        portal.portalId = recommendedPortal.portal.id;
+        if (recommendedPortal.directoryLocation !== undefined) {
+            portal.directoryLocation = {};
+            portal.directoryLocation.directoryLocationId = recommendedPortal.directoryLocation.sourceId;
+            portal.directoryLocation.directoryLocationType = recommendedPortal.directoryLocation.type;
+        }
+        return portal;
     }
 
     /*
@@ -1032,69 +1858,57 @@ var mfUtils = require('./mf-utils.js');
     function createConnectionOverviewContent(previousView) {
         // this view we want to hide the previous view first and display the loading indicator
         if (previousView) {
-            $('#' + previousView).remove();
+            removePreviousView(previousView);
         }
         // hide error when screen first loads
-        document.getElementById('mfConnectError').style.display = 'none';
+        changeErrorVisibility(false);
         displayLoading(true);
 
         var connectionOverview = createHtmlElement('div', 'connectionOverview', 'connection-overview');
 
-        // add header
+        var headerContent = document.createElement('div');
+
+        // header
         var header = document.createElement('h1');
-        header.innerHTML = 'Your providers';
-        connectionOverview.appendChild(header);
+        header.innerHTML = 'Connections';
+        headerContent.appendChild(header);
 
-        // initializeConnectionOverview
-        mfUtils.initializeConnectionOverview()
-            .then(function (result) {
-                // create list of providers/connections
-                var connectionsList = document.createElement('ul');
-                connectionsList.className = 'mf-list--legacy';
+        // add new connection btn
+        var subHeader = document.createElement('h2');
+        var addNewConnection = createHtmlElement('button', undefined, 'mf-cta__primary--optional');
+        addNewConnection.innerHTML = 'Add a connection';
+        addNewConnection.onclick = function () {
+            goToSearchForConnection('connectionOverview');
+        };
+        subHeader.appendChild(addNewConnection);
+        headerContent.appendChild(subHeader);
 
-                var associatedProviders = _.sortBy(result.associatedProviders, 'nameAlias');
+        // paragraph
+        var addConnectionInfo = document.createElement('p');
+        addConnectionInfo.innerHTML = 'Add all your patient portals for a complete health record.';
+        headerContent.appendChild(addConnectionInfo);
 
-                _.forEach(associatedProviders, function (provider) {
-                    var providerAddress = mfUtils.getProviderConnectionDisplayAddress(provider);
+        connectionOverview.appendChild(headerContent);
 
-                    var connectionLi = document.createElement('li');
-                    connectionLi.className = 'mf-list__item mf-list--byline';
-                    // if connection has error (see above) display to user somehow
-                    connectionLi.innerHTML = '';
-                    if (provider.connectionStatus === 'ERROR_USER_AUTH' || provider.connectionStatus === 'ERROR_NEEDS_USER_INTERACTION') {
-                        connectionLi.innerHTML += '<span class="mf-icon mf-icon__alert mf-list__pull-right"></span>';
-                    }
-                    connectionLi.innerHTML += '<p class="mf-list__element--primary">' + provider.nameAlias + '</p><p class="mf-list__element--secondary">' + providerAddress + '</p>';
+        var successHandler = function (profileData) {
+            createListOfProviders(connectionOverview, profileData);
+        };
+        var errorHandler = function (error) {
+            createListOfProvidersErrorHandler(connectionOverview, error);
+        };
+        mfUtils.findProfileConnectionsAndPortals().then(successHandler, errorHandler);
+    }
 
-                    // onclick go to provider detail
-                    connectionLi.onclick = function () {
-                        goToProviderDetails('connectionOverview', provider, result.extendedConnectionList);
-                    };
-                    connectionsList.appendChild(connectionLi);
-                });
-                // add new provider btn
-                var addNewProvider = document.createElement('li');
-                addNewProvider.className = 'mf-list__item mf-list__element-left';
-                addNewProvider.innerHTML = '<span class="mf-icon mf-icon__add"></span><p class="mf-list__element--primary">Add a provider</p>';
-                addNewProvider.onclick = function () {
-                    goToSearchForConnection('connectionOverview');
-                };
-                connectionsList.appendChild(addNewProvider);
-                connectionOverview.appendChild(connectionsList);
+    function removePreviousView(previousView) {
+        $('#' + previousView).remove();
+    }
 
-                // remove the back button
-                document.getElementById('mfConnectBack').style.display = 'none';
-                document.getElementById('mfButtonHolder').removeAttribute('class');
-
-                displayLoading(false);
-                document.getElementById('createConnectionContent').appendChild(connectionOverview);
-            }, function (error) {
-                displayLoading(false);
-                document.getElementById('createConnectionContent').appendChild(connectionOverview);
-                // display error
-                displayError('Error loading connections.');
-            });
-
+    function changeErrorVisibility(makeVisible) {
+        var display = 'none';
+        if (makeVisible) {
+            display = 'block';
+        }
+        document.getElementById('mfConnectError').style.display = display;
     }
 
     // list of public variable that map to private function that are used strictly for testing purposes.
@@ -1103,17 +1917,16 @@ var mfUtils = require('./mf-utils.js');
     MfConnect.prototype._goToSearchForConnection = goToSearchForConnection;
     MfConnect.prototype._getDirectorySearchResults = getDirectorySearchResults;
     MfConnect.prototype._goToSearchResults = goToSearchResults;
-    MfConnect.prototype._selectSearchResult = selectSearchResult;
-    MfConnect.prototype._goToSelectLocation = goToSelectLocation;
-    MfConnect.prototype._selectDirectoryLocation = selectDirectoryLocation;
+    MfConnect.prototype._selectSearchResult = directorySearchResultClick;
     MfConnect.prototype._goToSelectPortal = goToSelectPortal;
     MfConnect.prototype._selectPortal = selectPortal;
     MfConnect.prototype._goToEnterCredentials = goToEnterCredentials;
     MfConnect.prototype._createNewConnection = createNewConnection;
-    MfConnect.prototype._goToProviderDetails = goToProviderDetails;
+    MfConnect.prototype._goToConnectionDetails = goToConnectionDetails;
+    MfConnect.prototype._goToUpdateCredentials = goToUpdateCredentials;
     MfConnect.prototype._refreshConnection = refreshConnection;
     MfConnect.prototype._updateConnection = updateConnection;
-    MfConnect.prototype._deleteProviderConnection = deleteProviderConnection;
+    MfConnect.prototype._deleteSelectedConnection = deleteSelectedConnection;
     MfConnect.prototype._createConnectionOverviewContent = createConnectionOverviewContent;
     /* end test-code */
 
@@ -1121,19 +1934,17 @@ var mfUtils = require('./mf-utils.js');
 })(window);
 
 (function () {
-
     'use strict';
-
     // this line is necessary for initializing MfConnect
-    var mfConnect = new MfConnect();
 
+    var mfConnect = new MfConnect();
 })();
 
-},{"./mf-connect-service.js":2,"./mf-utils.js":3,"jquery":5,"lodash":6}],2:[function(require,module,exports){
+},{"./mf-connect-service.js":4,"./mf-utils.js":5,"jquery":7,"lodash":8}],4:[function(require,module,exports){
 var _ = require('lodash');
 var Promise = require('bluebird');
 
-var mfConnectService = (function() {
+var mfConnectService = (function () {
     'use strict';
 
     // *** these are here for reference and will be taken out before we go out with mfConnect
@@ -1145,7 +1956,7 @@ var mfConnectService = (function() {
 
     return {
 
-        getMfConnectData: function() {
+        getMfConnectData: function () {
             return mfConnectData;
         },
 
@@ -1154,36 +1965,36 @@ var mfConnectService = (function() {
          *  options will include userUuid, customerUuid, accessToken, and url for env
          *  it will also include apiKey if demo or prod env
          */
-        setMfConnectData: function(options) {
+        setMfConnectData: function (options) {
 
             mfConnectData = options;
             apiUrl = options.url;
 
             return mfConnectService.findAllProfiles()
-                .then(function(profiles) {
-                    _.forEach(profiles, function(profile) {
+                .then(function (profiles) {
+                    _.forEach(profiles, function (profile) {
                         if (profile.isSelf) {
                             mfConnectData.profileId = profile.id;
                         }
                     });
                     return mfConnectData;
-                },function(error) {
+                }, function (error) {
                     return error;
                 });
             // error handling?
         },
 
         // if token expires, reset token
-        setAccessToken: function(token) {
+        setAccessToken: function (token) {
             mfConnectData.accessToken = token;
         },
 
         // probably won't need these, well set profileId in beginning and it'll be on the data object throughout but eh
-        getProfileId: function() {
+        getProfileId: function () {
             return mfConnectData.profileId;
         },
 
-        setProfileId: function(profileId) {
+        setProfileId: function (profileId) {
             mfConnectData.profileId = profileId;
         },
 
@@ -1191,7 +2002,7 @@ var mfConnectService = (function() {
         /*
          *  Returns an array of all profiles connected to the userUuid
          */
-        findAllProfiles: function() {
+        findAllProfiles: function () {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles';
             return mfConnectService.generatePromiseRequest('GET', url);
         },
@@ -1199,7 +2010,7 @@ var mfConnectService = (function() {
         /*
          *  Returns a single profile for the given profileId
          */
-        findProfileById: function(profileId) {
+        findProfileById: function (profileId) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
@@ -1208,7 +2019,7 @@ var mfConnectService = (function() {
         /*
          *  Returns an array of all connections associated with the userUuid
          */
-        findAllConnections: function() {
+        findAllConnections: function () {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections';
             return mfConnectService.generatePromiseRequest('GET', url);
         },
@@ -1216,11 +2027,8 @@ var mfConnectService = (function() {
         /*
          *  Returns a detailed connection object associated with the connectionId
          */
-        findConnectionById: function(connectionId, refresh) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections/' + connectionId;
-            if (refresh) {
-                url += '?refresh=' + refresh;
-            }
+        findConnectionById: function (connectionId, profileId) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections/' + connectionId;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
@@ -1228,8 +2036,8 @@ var mfConnectService = (function() {
          *  update connection with new connectionData
          */
         // also need hardRefresh param
-        updateConnection: function(connectionData, refresh) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections/' + connectionData.id;
+        updateConnection: function (profileId, connectionData, refresh) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections/' + connectionData.id;
             if (refresh) {
                 url += '?refresh=' + refresh;
             }
@@ -1239,32 +2047,41 @@ var mfConnectService = (function() {
         /*
          *  returns list of connections for specific profileId
          */
-        findConnectionsForProfile: function(profileId) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections';
+        findConnectionsForProfile: function (profileId) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections';
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
         /*
          *  create a new connection for profile
          */
-        createConnectionForProfile: function(profileId, connectionInfo) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections';
-            return mfConnectService.generatePromiseRequest('POST', url, connectionInfo);
+        createConnectionForProfile: function (profileId, portalId, locationId, locationType, providerNameAlias, credentialInfo) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections?providerNameAlias=' + providerNameAlias;
+            if (portalId) {
+                url += '&portalId=' + portalId;
+            }
+            if (locationId) {
+                url += '&locationId=' + locationId;
+            }
+            if (locationType) {
+                url += '&locationType=' + locationType;
+            }
+            return mfConnectService.generatePromiseRequest('POST', url, credentialInfo);
         },
 
-        findConnectionByProfileIdAndConnectionId: function(profileId, connectionId) {
+        findConnectionByProfileIdAndConnectionId: function (profileId, connectionId) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections/' + connectionId;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
         // provider endpoints
-        updateProviderConnectionInfo: function(connectionId, providerAliasInfo) {
+        updateProviderConnectionInfo: function (connectionId, providerAliasInfo) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections/' + connectionId + '/providers/' + providerAliasInfo.providerId;
             return mfConnectService.generatePromiseRequest('PUT', url, providerAliasInfo);
         },
 
-        deleteProviderConnection: function(connectionId, providerId) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/connections/' + connectionId + '/providers/' + providerId;
+        deleteConnection: function (profileId, connectionId) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/connections/' + connectionId;
             return mfConnectService.generatePromiseRequest('DELETE', url);
         },
 
@@ -1273,8 +2090,8 @@ var mfConnectService = (function() {
          * GET /search
          * maybe pass these in customerUuid, userUuid, apiKey, accessToken
          */
-        findAllDirectorySearch: function(searchParams) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/search?q=' + searchParams.q + '&filterByZip=' + searchParams.filterByZip + '&limit=' + searchParams.limit;
+        findAllDirectorySearch: function (searchParams) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/search?searchQuery=' + searchParams.searchQuery + '&zip=' + searchParams.zip;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
@@ -1282,7 +2099,7 @@ var mfConnectService = (function() {
          * Fetch office information by officeId
          * GET /offices/{officeId}
          */
-        fetchOfficeById: function(officeId, includeProviders) {
+        fetchOfficeById: function (officeId, includeProviders) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/offices/' + officeId;
             if (includeProviders) {
                 url += '?includeProviders=' + includeProviders;
@@ -1294,7 +2111,7 @@ var mfConnectService = (function() {
          * Fetch facility information by facilityId
          * GET /facilities/{facilityId}
          */
-        fetchFacilityById: function(facilityId, includeOffices, includeProviders) {
+        fetchFacilityById: function (facilityId, includeOffices, includeProviders) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/facilities/' + facilityId; // + '&includeOffices=false' (defaults true)
             if (includeProviders) {
                 url += '?includeProviders=' + includeProviders;
@@ -1308,38 +2125,20 @@ var mfConnectService = (function() {
             return mfConnectService.generateRequest('GET', url);
         },
 
-        /*
-         * Fetch practice information by practiceId
-         * GET /practices/{practiceId}
-         * if includeOffices, fetchPracticeLocations
-         */
-        fetchPracticeById: function(practiceId, includeOffices) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/practices/' + practiceId;
-            if (includeOffices) {
-                url += '?includeOffices=' + includeOffices;
-            }
-            return mfConnectService.generatePromiseRequest('GET', url);
-        },
-
-        /*
-         * Fetch provider information by providerId
-         * GET /providers/{providerId}
-         * if includeLocations, fetchProviderLocations
-         */
-        fetchProviderById: function(providerId, includeLocations) {
-            var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/providers/' + providerId;
-            if (includeLocations) {
-                url += '?includeLocations=' + includeLocations;
-            }
-            return mfConnectService.generatePromiseRequest('GET', url);
-        },
-
         // portal service
         /*
          *  Fetch one portal by Id
          */
-        findOnePortalById: function(portalId) {
+        findPortalById: function (portalId) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/portals/' + portalId;
+            return mfConnectService.generatePromiseRequest('GET', url);
+        },
+
+        /*
+         * fetch portals by url
+         */
+        fetchPortalsByUrl: function (primaryUrl) {
+            var url = apiUrl + '/v2/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/portals/search?primaryUrl=' + encodeURIComponent(primaryUrl);
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
@@ -1347,7 +2146,7 @@ var mfConnectService = (function() {
          * Fetch portals by directory id and directory type
          * GET /portals?directoryLocationId= &directoryLocationType=
          */
-        findByDirectoryId: function(directoryLocationId, directoryLocationType, includeChildren) {
+        findPortalsByDirectoryId: function (directoryLocationId, directoryLocationType, includeChildren) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/portals';
             if (directoryLocationId && directoryLocationType) {
                 url += '?directoryLocationId=' + directoryLocationId + '&directoryLocationType=' + directoryLocationType;
@@ -1363,7 +2162,7 @@ var mfConnectService = (function() {
         },
 
         // livedoc
-        getLiveDocResources: function(profileId, resourceType) {
+        getLiveDocResources: function (profileId, resourceType) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/resources';
             if (resourceType) {
                 url += '?resourceType=' + resourceType;
@@ -1371,12 +2170,12 @@ var mfConnectService = (function() {
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
-        getLiveDocResourcesById: function(profileId, liveDocItemId) {
+        getLiveDocResourcesById: function (profileId, liveDocItemId) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/resources/' + liveDocItemId;
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
-        getLiveDocSummaries: function(profileId, resourceType) {
+        getLiveDocSummaries: function (profileId, resourceType) {
             var url = apiUrl + '/v1/customers/' + mfConnectData.customerUuid + '/users/' + mfConnectData.userUuid + '/profiles/' + profileId + '/resources/summaries';
             if (resourceType) {
                 url += '?resourceType=' + resourceType;
@@ -1384,7 +2183,7 @@ var mfConnectService = (function() {
             return mfConnectService.generatePromiseRequest('GET', url);
         },
 
-        generateRequest: function(method, url) {
+        generateRequest: function (method, url) {
             var token = 'bearer ' + mfConnectData.accessToken;
             var request = new XMLHttpRequest();
             request.open(method, url, false);
@@ -1406,15 +2205,15 @@ var mfConnectService = (function() {
         },
 
         // generate a promise request based on parameters passed in
-        generatePromiseRequest: function(method, url, requestBody) {
-            return new Promise(function(resolve, reject) {
+        generatePromiseRequest: function (method, url, requestBody) {
+            return new Promise(function (resolve, reject) {
 
                 var token = 'bearer ' + mfConnectData.accessToken;
 
                 var request = new XMLHttpRequest();
                 request.open(method, url);
                 // request went through, either returns response or error
-                request.onload = function() {
+                request.onload = function () {
                     // covers 200 and 204 no content, any others?
                     if (this.status >= 200 && this.status < 300) {
                         if (request.responseText !== '') {
@@ -1428,7 +2227,7 @@ var mfConnectService = (function() {
                     }
                 };
                 // request did not go through
-                request.onerror = function() {
+                request.onerror = function () {
                     reject({
                         status: this.status,
                         message: 'An unknown error occurred.'
@@ -1451,281 +2250,165 @@ var mfConnectService = (function() {
 })();
 
 module.exports = mfConnectService;
-},{"bluebird":4,"lodash":6}],3:[function(require,module,exports){
+},{"bluebird":6,"lodash":8}],5:[function(require,module,exports){
 var mfConnect = require('../js/mf-connect-service.js');
 var _ = require('lodash');
 var Promise = require('bluebird');
 
-var mfUtils = (function() {
+var mfUtils = (function () {
     'use strict';
 
     return {
 
         // returns display name for places in search results list
-        getPracticeDisplayName: function(practice) {
-            var name = '';
-            if (practice[0].practice && practice[0].office && practice[0].practice.name && practice[0].office.name) {
-                name = _.startCase(practice[0].practice.name);
-                if (_.toLower(practice[0].practice.name) !== _.toLower(practice[0].office.name)) {
-                    name += ': ' + _.startCase(practice[0].office.name);
-                }
-            } else if (practice[0].practice && practice[0].facility && practice[0].practice.name && practice[0].facility.name) {
-                name = _.startCase(practice[0].practice.name);
-                if (_.toLower(practice[0].practice.name) !== _.toLower(practice[0].facility.name)) {
-                    name = _.startCase(practice[0].facility.name) + ': ' + name;
-                }
-            } else if (practice[0].practice && practice[0].practice.name) {
-                name = _.startCase(practice[0].practice.name);
-            } else if (practice[0].office && practice[0].office.name) {
-                name = _.startCase(practice[0].office.name);
-            } else if (practice[0].facility && practice[0].facility.name) {
-                name = _.startCase(practice[0].facility.name);
-            } else {
-                name = practice[0].address.address + ', ' + practice[0].address.city + ', ' + practice[0].address.state + ' ' + practice[0].address.zipcode;
-            }
-            return name;
+        getPracticeDisplayName: function (practice) {
+            return _.startCase(practice.displayName);
         },
 
         // returns display address for places in search results list
-        getPracticeDisplayAddress: function(practice) {
-            if ((practice[0].practice && practice[0].practice.name) || (practice[0].office && practice[0].office.name) || (practice[0].facility && practice[0].facility.name)) {
-                if (!practice[1]) {
-                    return (practice[0].address.address ? practice[0].address.address + ', ' : '') + practice[0].address.city + ', ' + practice[0].address.state + ' ' + practice[0].address.zipcode;
-                } else {
-                    return 'Multiple locations';
-                }
-            } else {
-                return '';
-            }
+        getPracticeDisplayAddress: function (practice) {
+            return practice.fullAddress;
         },
 
         // returns provider display name in search results list
-        getProviderDisplayName: function(provider) {
-            return _.startCase(provider[0].provider.firstName) + ' ' + _.startCase(provider[0].provider.lastName) +
-                (provider[0].provider.degree ? ', ' + provider[0].provider.degree : '');
+        getProviderDisplayName: function (provider) {
+            return _.startCase(provider.providerName);
         },
 
         // returns provider display address in search results list
-        getProviderDisplayAddress: function(provider) {
-            if (!provider[1]) {
-                return (provider[0].address.address ? provider[0].address.address + ', ' : '') + provider[0].address.city + ', ' + provider[0].address.state + ' ' + provider[0].address.zipcode;
-            } else {
-                return 'Multiple locations';
-            }
+        getProviderDisplayAddress: function (provider) {
+            return provider.fullAddress;
         },
 
-        getDirectoryLocationDisplayName: function(directoryLocation) {
+        getDirectoryLocationDisplayName: function (directoryLocation) {
             var name = '';
-            if (directoryLocation.practice && directoryLocation.practice.name && directoryLocation.name) {
-                if (_.toLower(directoryLocation.practice.name) === _.toLower(directoryLocation.name)) {
-                    name = _.startCase(directoryLocation.name);
+            if (directoryLocation.practiceName && directoryLocation.displayName) {
+                if (_.toLower(directoryLocation.practiceName) === _.toLower(directoryLocation.displayName)) {
+                    name = _.startCase(directoryLocation.displayName);
                 } else {
-                    name = _.startCase(directoryLocation.practice.name) + ': ' + _.startCase(directoryLocation.name);
+                    name = _.startCase(directoryLocation.practiceName) + ': ' + _.startCase(directoryLocation.displayName);
                 }
-            } else if (directoryLocation.practice && directoryLocation.practice.name) {
-                name = directoryLocation.practice.name;
-            } else if (directoryLocation.name) {
-                name = directoryLocation.name;
+            } else if (directoryLocation.practiceName) {
+                name = directoryLocation.practiceName;
+            } else if (directoryLocation.displayName) {
+                name = directoryLocation.displayName;
             }
             return name;
         },
-        getAddressDisplayName: function(address) {
-            var st = address.address ? address.address + ', ' : '';
-            return st + address.city + ', ' + address.state + ' ' + address.zipcode;
+
+        getAddressDisplayName: function (selectedItem) {
+            return selectedItem.fullAddress;
         },
 
         /*
          *  returns results from search separated into providers and practices
          */
-        getDirectorySearchResults: function(searchTerm, zipCode) {
+        findDirectoryLocations: function (searchTerm, zipCode) {
 
             searchTerm = _.trim(searchTerm);
             if (_.startsWith(_.toLower(searchTerm), 'dr.') || _.startsWith(_.toLower(searchTerm), 'dr ')) {
                 searchTerm = searchTerm.slice(3);
             }
             var searchParams = {
-                q: searchTerm,
-                filterByZip: zipCode,
+                searchQuery: searchTerm,
+                zip: zipCode,
                 limit: 100
             };
 
             return mfConnect.findAllDirectorySearch(searchParams)
-                .then(function(directoryResults) {
+                .then(function (directoryResults) {
                     // filter out result list
                     var resultList = {
                         providers: [],
                         practices: []
                     };
 
-                    resultList.providers = _.filter(directoryResults, function(directoryResult) {
-                        return !!directoryResult.provider;
+                    var providers = _.filter(directoryResults, function (directoryResult) {
+                        return !!directoryResult.providerId;
                     });
 
-                    resultList.practices = _.filter(directoryResults, function(directoryResult) {
-                        return !directoryResult.provider;
+                    var practices = _.filter(directoryResults, function (directoryResult) {
+                        return !directoryResult.providerId;
                     });
+
+                    resultList.practices = _.uniqBy(practices, 'practiceId');
+                    resultList.providers = _.uniqBy(providers, 'providerId');
 
                     return resultList;
-                }, function(error) {
+                }, function (error) {
                     return Promise.reject(error);
                 });
         },
 
-        /*
-         * returns an object with the name of the next step, directoryLocation, and possibly directoryInstance or portal or portalArray
-         */
-        selectDirectoryObject: function(directoryObjectArray) {
+        getPortalsNextStep: function (params, portalArray) {
+            if (portalArray.length === 0) {
+                params.nextStep = 'createConnectionEnterCredentials';
+                return params;
+            } else if (portalArray.length === 1) {
+                params.nextStep = 'createConnectionEnterCredentials';
+                params.portal = portalArray[0];
+                return params;
+            } else {
+                params.nextStep = 'createConnectionSelectPortal';
+                params.portalArray = portalArray;
+                return params;
+            }
+        },
+
+        selectOfficeDirectoryItem: function (directoryObjectArray) {
+
             var params = {
                 directoryLocation: {},
                 nextStep: '',
                 directoryInstance: {}
             };
+            var errorHandler = function (error) {
+                return Promise.reject(error);
+            };
+            var _this = this;
+            var portalNextStep = function (portalArray) {
+                return _this.getPortalsNextStep(params, portalArray);
+            };
+            params.directoryLocation.directoryLocationId = directoryObjectArray.officeId;
+            params.directoryLocation.directoryLocationType = 'OFFICE';
+            return mfConnect.findPortalsByDirectoryId(directoryObjectArray.officeId, 'OFFICE').then(portalNextStep, errorHandler);
+        },
 
-            if (directoryObjectArray[0].provider && directoryObjectArray[0].provider.sourceId) {
-                return mfConnect.fetchProviderById(directoryObjectArray[0].provider.sourceId, true)
-                    .then(function(providerInstance) {
-                        params.directoryLocation.searchSelection = directoryObjectArray[0].provider.sourceId;
-                        params.directoryLocation.searchSelectionType = 'PROVIDER';
-                        params.directoryInstance = providerInstance;
+        selectFacilityDirectoryItem: function (directoryObjectArray) {
 
-                        if ((providerInstance.offices && providerInstance.facilities && (providerInstance.offices.length + providerInstance.facilities.length) > 1) ||
-                            (providerInstance.facilities && providerInstance.facilities.length > 1) ||
-                            (providerInstance.offices && providerInstance.offices.length > 1)) {
-                            params.nextStep = 'createConnectionSelectLocation';
-                            return params;
-                        } else {
-                            if (providerInstance.offices[0]) {
-                                params.directoryLocation.directoryLocationId = providerInstance.offices[0].sourceId;
-                                params.directoryLocation.directoryLocationType = 'OFFICE';
+            var params = {
+                directoryLocation: {},
+                nextStep: '',
+                directoryInstance: {}
+            };
+            var errorHandler = function (error) {
+                return Promise.reject(error);
+            };
+            var _this = this;
+            var portalNextStep = function (portalArray) {
+                return _this.getPortalsNextStep(params, portalArray);
+            };
+            params.directoryLocation.directoryLocationId = directoryObjectArray.facilityId;
+            params.directoryLocation.directoryLocationType = 'FACILITY';
+            return mfConnect.findPortalsByDirectoryId(directoryObjectArray.facilityId, 'FACILITY').then(portalNextStep, errorHandler);
+        },
 
-                                return mfConnect.findByDirectoryId(providerInstance.offices[0].sourceId, 'OFFICE')
-                                    .then(function(portalArray) {
-                                        if (portalArray.length === 0) {
-                                            params.nextStep = 'createConnectionEnterCredentials';
-                                            return params;
-                                        } else if (portalArray.length === 1) {
-                                            params.nextStep = 'createConnectionEnterCredentials';
-                                            params.portal = portalArray[0];
-                                            return params;
-                                        } else {
-                                            params.nextStep = 'createConnectionSelectPortal';
-                                            params.portalArray = portalArray;
-                                            return params;
-                                        }
-                                    }, function(error) {
-                                        return Promise.reject(error);
-                                    });
-                            } else {
-                                params.directoryLocation.directoryLocationId = providerInstance.facilities[0].sourceId;
-                                params.directoryLocation.directoryLocationType = 'FACILITY';
-
-                                return mfConnect.findByDirectoryId(providerInstance.facilities[0].sourceId, 'FACILITY')
-                                    .then(function(portalArray) {
-                                        if (portalArray.length === 0) {
-                                            params.nextStep = 'createConnectionEnterCredentials';
-                                            return params;
-                                        } else if (portalArray.length === 1) {
-                                            params.nextStep = 'createConnectionEnterCredentials';
-                                            params.portal = portalArray[0];
-                                            return params;
-                                        } else {
-                                            params.nextStep = 'createConnectionSelectPortal';
-                                            params.portalArray = portalArray;
-                                            return params;
-                                        }
-                                    }, function(error) {
-                                        return Promise.reject(error);
-                                    });
-                            }
-                        }
-                    }, function(error) {
-                        return Promise.reject(error);
-                    });
-            } else if (directoryObjectArray[0].practice && directoryObjectArray[0].practice.sourceId) {
-                return mfConnect.fetchPracticeById(directoryObjectArray[0].practice.sourceId, true)
-                    .then(function(practiceInstance) {
-                        params.directoryLocation.searchSelection = directoryObjectArray[0].practice.sourceId;
-                        params.directoryLocation.searchSelectionType = 'PRACTICE';
-                        params.directoryInstance = practiceInstance;
-
-                        if (practiceInstance.offices && practiceInstance.offices.length > 1) {
-                            params.nextStep = 'createConnectionSelectLocation';
-                            return params;
-                        } else {
-                            params.directoryLocation.directoryLocationId = practiceInstance.offices[0].sourceId;
-                            params.directoryLocation.directoryLocationType = 'OFFICE';
-
-                            return mfConnect.findByDirectoryId(practiceInstance.offices[0].sourceId, 'OFFICE')
-                                .then(function(portalArray) {
-                                    if (portalArray.length === 0) {
-                                        params.nextStep = 'createConnectionEnterCredentials';
-                                        return params;
-                                    } else if (portalArray.length === 1) {
-                                        params.nextStep = 'createConnectionEnterCredentials';
-                                        params.portal = portalArray[0];
-                                        return params;
-                                    } else {
-                                        params.nextStep = 'createConnectionSelectPortal';
-                                        params.portalArray = portalArray;
-                                        return params;
-                                    }
-                                }, function(error) {
-                                    return Promise.reject(error);
-                                });
-                        }
-                    }, function(error) {
-                        return Promise.reject(error);
-                    });
-            } else if (directoryObjectArray[0].office && directoryObjectArray[0].office.sourceId) {
-                params.directoryLocation.directoryLocationId = directoryObjectArray[0].office.sourceId;
-                params.directoryLocation.directoryLocationType = 'OFFICE';
-
-                return mfConnect.findByDirectoryId(directoryObjectArray[0].office.sourceId, 'OFFICE')
-                    .then(function(portalArray) {
-                        if (portalArray.length === 0) {
-                            params.nextStep = 'createConnectionEnterCredentials';
-                            return params;
-                        } else if (portalArray.length === 1) {
-                            params.nextStep = 'createConnectionEnterCredentials';
-                            params.portal = portalArray[0];
-                            return params;
-                        } else {
-                            params.nextStep = 'createConnectionSelectPortal';
-                            params.portalArray = portalArray;
-                            return params;
-                        }
-                    }, function(error) {
-                        return Promise.reject(error);
-                    });
-            } else if (directoryObjectArray[0].facility && directoryObjectArray[0].facility.sourceId) {
-                params.directoryLocation.directoryLocationId = directoryObjectArray[0].facility.sourceId;
-                params.directoryLocation.directoryLocationType = 'FACILITY';
-
-                return mfConnect.findByDirectoryId(directoryObjectArray[0].facility.sourceId, 'FACILITY')
-                    .then(function(portalArray) {
-                        if (portalArray.length === 0) {
-                            params.nextStep = 'createConnectionEnterCredentials';
-                            return params;
-                        } else if (portalArray.length === 1) {
-                            params.nextStep = 'createConnectionEnterCredentials';
-                            params.portal = portalArray[0];
-                            return params;
-                        } else {
-                            params.nextStep = 'createConnectionSelectPortal';
-                            params.portalArray = portalArray;
-                            return params;
-                        }
-                    }, function(error) {
-                        return Promise.reject(error);
-                    });
+        /*
+         * returns an object with the name of the next step, directoryLocation, and possibly directoryInstance or portal or portalArray
+         */
+        selectDirectoryObject: function (directoryObjectArray) {
+            if (directoryObjectArray.officeId) {
+                return this.selectOfficeDirectoryItem(directoryObjectArray);
             }
-
+            if (directoryObjectArray.facilityId) {
+                return this.selectFacilityDirectoryItem(directoryObjectArray);
+            }
         },
 
         /*
          *  check if location has multiple portals and returns params object with information for next step
          */
-        checkForMultiplePortals: function(location, parameters) {
+        checkForMultiplePortals: function (location, parameters) {
 
             var params = parameters;
             params.nextStep = '';
@@ -1733,23 +2416,25 @@ var mfUtils = (function() {
             params.directoryLocation.directoryLocationId = location.locationInfo.sourceId;
             params.directoryLocation.directoryLocationType = location.locationType;
 
-            return mfConnect.findByDirectoryId(location.locationInfo.sourceId, location.locationType)
-                .then(function(portalArray) {
-                    if (portalArray.length === 0) {
-                        params.nextStep = 'createConnectionEnterCredentials';
-                        return params;
-                    } else if (portalArray.length === 1) {
-                        params.nextStep = 'createConnectionEnterCredentials';
-                        params.portal = portalArray[0];
-                        return params;
-                    } else {
-                        params.nextStep = 'createConnectionSelectPortal';
-                        params.portalArray = portalArray;
-                        return params;
-                    }
-                }, function(error) {
-                    return Promise.reject(error);
-                });
+            var errorHandler = function (error) {
+                return Promise.reject(error);
+            };
+
+            var _this = this;
+            var portalNextStep = function (portalArray) {
+                return _this.getPortalsNextStep(params, portalArray);
+            };
+
+            return mfConnect.findPortalsByDirectoryId(location.locationInfo.sourceId, location.locationType).then(portalNextStep, errorHandler);
+        },
+
+        fetchDirectoryLocation: function (directoryLocation) {
+            if (directoryLocation.directoryLocationType === 'OFFICE') {
+                return mfConnect.fetchOfficeById(directoryLocation.directoryLocationId);
+            } else if (directoryLocation.directoryLocationType === 'FACILITY') {
+                return mfConnect.fetchFacilityById(directoryLocation.directoryLocationId);
+            }
+            return null;
         },
 
         /*
@@ -1768,49 +2453,46 @@ var mfUtils = (function() {
          *  }
          *  return initial information for enter credentials view
          */
-        initializeStep2Content: function(params) {
+        initializeStep2Content: function (params) {
             // need a better name for scopeVars
             // scopeVars are the variables we will pass back to be used in the view
             var scopeVars = {
                 newConnectionFields: {},
                 connectionCredentials: {}
             };
-            var directoryLocation = {
-                directoryLocationId: params.directoryLocation.directoryLocationId,
-                directoryLocationType: params.directoryLocation.directoryLocationType
-            };
-            var searchSelection = {
-                sourceId: params.directoryLocation.searchSelection,
-                type: params.directoryLocation.searchSelectionType
-            };
+            if (params.directoryLocation) {
+                var directoryLocation = {
+                    directoryLocationId: params.directoryLocation.directoryLocationId,
+                    directoryLocationType: params.directoryLocation.directoryLocationType
+                };
+                scopeVars.directoryLocation = this.fetchDirectoryLocation(directoryLocation);
+                var searchSelection = {
+                    sourceId: params.directoryLocation.searchSelection,
+                    type: params.directoryLocation.searchSelectionType
+                };
+                if (searchSelection.sourceId) {
+                    if (searchSelection.type === 'PROVIDER') {
+                        scopeVars.directoryLocation.providers = [];
+                        scopeVars.directoryLocation.providers.push(params.directoryInstance);
+                    } else if (searchSelection.type === 'PRACTICE') {
+                        scopeVars.directoryLocation.practices = [];
+                        scopeVars.directoryLocation.practices.push(params.directoryInstance);
+                    }
+                }
+            }
             if (params.portal) {
                 scopeVars.selectedPortal = mfUtils.getExtendedPortal(params.portal);
             }
-            if (directoryLocation.directoryLocationType === 'OFFICE') {
-                scopeVars.directoryLocation = mfConnect.fetchOfficeById(directoryLocation.directoryLocationId);
-            } else if (directoryLocation.directoryLocationType === 'FACILITY') {
-                scopeVars.directoryLocation = mfConnect.fetchFacilityById(directoryLocation.directoryLocationId);
-            }
-
-            if (searchSelection.sourceId) {
-                if (searchSelection.type === 'PROVIDER') {
-                    scopeVars.directoryLocation.providers = [];
-                    scopeVars.directoryLocation.providers.push(params.directoryInstance);
-                } else if (searchSelection.type === 'PRACTICE') {
-                    scopeVars.directoryLocation.practices = [];
-                    scopeVars.directoryLocation.practices.push(params.directoryInstance);
-                }
-            }
 
             return mfConnect.findConnectionsForProfile(params.profileId)
-                .then(function(connectionList) {
+                .then(function (connectionList) {
                     var existingConnection = null;
 
                     // check for existing connection
                     if (scopeVars.selectedPortal && scopeVars.selectedPortal.id) {
-                        existingConnection = _.find(connectionList, function(connectionInstance) {
-                                return '' + connectionInstance.portalId === '' + scopeVars.selectedPortal.id;
-                            }) || null;
+                        existingConnection = _.find(connectionList, function (connectionInstance) {
+                            return '' + connectionInstance.portalId === '' + scopeVars.selectedPortal.id;
+                        }) || null;
                     }
 
                     if (existingConnection) {
@@ -1821,47 +2503,71 @@ var mfUtils = (function() {
                     }
 
                     return scopeVars;
-                }, function(error) {
+                }, function (error) {
                     return Promise.reject(error);
                 });
+        },
 
+        findConnectionById: function (connection) {
+            return mfConnect.findConnectionById(connection.id, connection.profileId)
+                .then(function (connection) {
+                    return mfConnect.findPortalById(connection.portalId)
+                        .then(function (portal) {
+                            connection.associatedPortal = mfUtils.getExtendedPortal(portal);
+                            var extendConnection = mfUtils.extendConnection(connection);
+                            return extendConnection;
+                        }, function (error) {
+                            return Promise.reject(error);
+                        });
+                }, function (error) {
+                    return Promise.reject(error);
+                });
         },
 
         // Order of calls -
         // POST connections
         // PUT connections/id/refresh=true if there is a portal
         // return new connection
-        createNewConnection: function(initialInfo, params) {
-
-            var connectionInfo = {
-                directoryLocation: initialInfo.directoryLocation,
-                credentials: {}
-            };
+        createNewConnection: function (initialInfo, params) {
+            var portalId = null;
             if (params.portal && params.portal.id) {
-                connectionInfo.portalId = params.portal.id;
+                portalId = params.portal.id;
             }
-            if (!initialInfo.existingConnection || (initialInfo.existingConnection && initialInfo.existingConnection.needsUserAuth())) {
-                connectionInfo.credentials.username = document.getElementById('connectionCredentials_username').value;
-                connectionInfo.credentials.password = document.getElementById('connectionCredentials_password').value;
+
+            var credentialInfo = {};
+            if (!initialInfo.existingConnection || (initialInfo.existingConnection && initialInfo.existingConnection.errorNeedsUserAuth())) {
+                credentialInfo.username = document.getElementById('connectionCredentials_username').value;
+                credentialInfo.password = document.getElementById('connectionCredentials_password').value;
                 // check undefined
             }
 
-            if (params.directoryLocation && params.directoryLocation.searchSelectionName) {
-                connectionInfo.providerNameAlias = params.directoryLocation.searchSelectionName;
-            } else if (params.directoryLocation && params.directoryLocation.directoryLocationName) {
-                connectionInfo.providerNameAlias = params.directoryLocation.directoryLocationName;
+            var providerNameAlias = null;
+            var locationType = null;
+            var locationId = null;
+            if (params.directoryLocation) {
+                if (params.directoryLocation.searchSelectionName) {
+                    providerNameAlias = params.directoryLocation.searchSelectionName;
+                } else if (params.directoryLocation.directoryLocationName) {
+                    providerNameAlias = params.directoryLocation.directoryLocationName;
+                }
+                if (params.directoryLocation.directoryLocationType) {
+                    locationType = params.directoryLocation.directoryLocationType;
+                }
+                if (params.directoryLocation.directoryLocationId) {
+                    locationId = params.directoryLocation.directoryLocationId;
+                }
             }
 
-            return mfConnect.createConnectionForProfile(params.profileId, connectionInfo)
-                .then(function(newConnection) {
+            return mfConnect.createConnectionForProfile(params.profileId, portalId, locationId, locationType, providerNameAlias, credentialInfo)
+                .then(function (newConnection) {
                     return newConnection;
-                }, function(error) {
+                }, function (error) {
                     return Promise.reject(error);
                 });
         },
 
         // returns address to display on connection overview
-        getProviderConnectionDisplayAddress: function(provider) {
+        getProviderConnectionDisplayAddress: function (provider) {
             var address = '';
             if (provider.directoryLocation && provider.directoryLocation.address) {
                 address = provider.directoryLocation.address.city + ', ' + provider.directoryLocation.address.state;
@@ -1875,37 +2581,116 @@ var mfUtils = (function() {
         },
 
         // initialize information for connection overview, return profileData with extended connection list and associated providers
-        initializeConnectionOverview: function() {
-
+        findProfileConnectionsAndPortals: function () {
             var profileId = mfConnect.getProfileId();
             var profileData = {
-                extendedConnectionList: [],
-                associatedProviders: []
+                connectionsList: []
             };
-
+            mfConnect.getMfConnectData().profileData = profileData;
             return mfConnect.findConnectionsForProfile(profileId)
-                .then(function(connections) {
+                .then(function (connections) {
                     return mfUtils.findPortalsForConnections(connections)
-                        .then(function(connectionsWithPortals) {
-                            _.forEach(connectionsWithPortals, function(connection) {
+                        .then(function (connectionsWithPortals) {
+                            _.forEach(connectionsWithPortals, function (connection) {
                                 var extendedConnection = mfUtils.extendConnection(connection);
-                                profileData.extendedConnectionList.push(extendedConnection);
-                                profileData.associatedProviders = profileData.associatedProviders.concat(extendedConnection.associatedProvidersList);
+                                profileData.connectionsList.push(extendedConnection);
                             });
                             return profileData;
                         });
-                }, function(error) {
+                }, function (error) {
                     return Promise.reject(error);
                 });
         },
 
-        findPortalsForConnections: function(connections) {
+        fetchPortalsByUrl: function (primaryUrl) {
+            if (primaryUrl) {
+                return mfConnect.fetchPortalsByUrl(primaryUrl)
+                    .then(function (portals) {
+                        var resultList = {
+                            portals: portals
+                        };
+
+                        return resultList;
+                    }, function (error) {
+                        return Promise.reject(error);
+                    });
+            }
+        },
+
+        hasSuccessfulExistingConnection: function (viewParams) {
+            if (!viewParams.existingConnection || (viewParams.existingConnection && viewParams.existingConnection.errorNeedsUserAuth())) {
+                return false;
+            }
+            return true;
+        },
+
+        hasRecommendedPortals: function () {
+            var portals = mfConnect.getMfConnectData()["recommendedPortals"];
+            if (!Array.isArray(portals)) {
+                return false;
+            }
+            return true;
+        },
+
+        removeAlreadyConnectedPortals: function (portals) {
+            var alreadyConnected = mfConnect.getMfConnectData().profileData.connectionsList.map(function (portal) {
+                return portal.portalId;
+            });
+            var newPortals = portals.filter(function (elem) {
+                return alreadyConnected.indexOf(JSON.stringify(elem.portalId)) === -1;
+            });
+
+            return newPortals;
+        },
+
+        removeNullPortals: function (portals) {
+            // null portal when fetch portal returns 404
+            return portals.filter(function (portal) {
+                return portal != null;
+            });
+        },
+
+        findRecommendedPortalsListData: function () {
+            if (!this.hasRecommendedPortals()) {
+                return Promise.resolve([]);
+            }
+            var portals = mfConnect.getMfConnectData()["recommendedPortals"];
+            portals = this.removeAlreadyConnectedPortals(portals);
+
+            var promises = [];
+            var _this = this;
+
+            _.forEach(portals, function (userPortal) {
+
+                var catchFn = function (error) {
+                    if (error.status && error.status === 404) {
+                        return null;
+                    }
+                    throw error;
+                };
+                var onGetPortal = function (portalMetadata) {
+                    var recommendedPortal = {};
+                    recommendedPortal.portal = portalMetadata;
+                    if (undefined !== userPortal.directoryLocation) {
+                        recommendedPortal.directoryLocation = _this.fetchDirectoryLocation(userPortal.directoryLocation);
+                    }
+                    return recommendedPortal;
+                };
+                var getOnePortalDataPromise = function () {
+                    return mfConnect.findPortalById(userPortal.portalId).then(onGetPortal).catch(catchFn);
+                };
+                promises.push(getOnePortalDataPromise());
+            });
+            return Promise.all(promises).then(this.removeNullPortals);
+        },
+
+        findPortalsForConnections: function (connections) {
             var connectionPromises = [];
 
-            _.forEach(connections, function(connection) {
-                var promise = function() {
-                    return mfConnect.findOnePortalById(connection.portalId)
-                        .then(function(portal) {
+            _.forEach(connections, function (connection) {
+                var promise = function () {
+                    return mfConnect.findPortalById(connection.portalId)
+                        .then(function (portal) {
                             connection.associatedPortal = mfUtils.getExtendedPortal(portal);
                             return connection;
                         });
@@ -1916,69 +2701,151 @@ var mfUtils = (function() {
             return Promise.all(connectionPromises);
         },
 
-        findConnectionForProvider: function(provider, connections) {
-            var connectionIndex = _.findIndex(connections, function(connection) {
-                return connection.id === provider.connectionId;
-            });
-
-            return connections[connectionIndex];
-        },
-
-        updateConnection: function(connectionFields, existingConnection) {
+        updateConnection: function (connection) {
             var refresh = true;
-            if (existingConnection && (existingConnection.associatedPortal && existingConnection.associatedPortal.status !== 'ACTIVE')) {
+            if (connection && (connection.associatedPortal && connection.associatedPortal.status !== 'ACTIVE')) {
                 refresh = false;
             }
-            return mfConnect.updateConnection(connectionFields, refresh)
-                .then(function(connection) {
-                    return mfConnect.findOnePortalById(connection.portalId)
-                        .then(function(portal) {
+            return mfConnect.updateConnection(connection.profileId, connection, refresh)
+                .then(function (connection) {
+                    return mfConnect.findPortalById(connection.portalId)
+                        .then(function (portal) {
                             connection.associatedPortal = mfUtils.getExtendedPortal(portal);
                             var extendConnection = mfUtils.extendConnection(connection);
 
-                            if (extendConnection.needsUserAuth()) {
+                            if (extendConnection.errorNeedsUserAuth()) {
                                 extendConnection.statusText = 'The username and password you provided were not accepted by this doctor\'s patient portal. Please verify credentials and try again.';
                             } else {
                                 extendConnection.statusText = mfUtils.getConnectionStatusText(extendConnection);
                             }
                             return extendConnection;
-                        }, function(error) {
+                        }, function (error) {
                             return Promise.reject(error);
                         });
-                }, function(error) {
+                }, function (error) {
                     return Promise.reject(error);
                 });
         },
 
-        getConnectionStatusText: function(connection) {
-            if (connection.isCompleted()) {
+        getStatusStyleDetails: function (connection) {
+            if (connection.isConnected()) {
+                return {
+                    gradientStyle: 'success',
+                    connectionDetailMessage: 'Connected',
+                    connectionManagementMessage: 'Connected',
+                    bannerIcon: 'mf-icon__connected',
+                    managementPageIcon: 'mf-icon__connected-small',
+                    connectionManagementSecondaryStyle: 'mf-list__element--secondary'
+                };
+            }
+
+            if (connection.isPending()) {
+                return {
+                    gradientStyle: 'pending',
+                    connectionDetailMessage: 'This pending portal is not supported at this time',
+                    connectionManagementMessage: 'Pending portal',
+                    bannerIcon: 'mf-icon__pending',
+                    managementPageIcon: 'mf-icon__pending-small',
+                    connectionManagementSecondaryStyle: 'mf-list__element--secondary'
+                };
+            }
+
+            if (connection.isRetrieving()) {
+                return {
+                    gradientStyle: 'refreshing',
+                    connectionDetailMessage: 'Refreshing connection',
+                    connectionManagementMessage: 'Refreshing connection',
+                    bannerIcon: 'mf-icon__refreshing',
+                    managementPageIcon: 'mf-icon__refreshing-small',
+                    connectionManagementSecondaryStyle: 'mf-list__element--secondary'
+                };
+            }
+
+            if (connection.hasAnyError()) {
+                if (connection.errorNeedsUserInteraction() || connection.errorNeedsSecurityQuestions()) {
+                    return {
+                        gradientStyle: 'invalid',
+                        connectionDetailMessage: 'Your portal is requiring you to make changes before we can retrieve your data.',
+                        connectionManagementMessage: 'Interaction required',
+                        bannerIcon: 'mf-icon__invalid',
+                        managementPageIcon: 'mf-icon__invalid-small',
+                        connectionManagementSecondaryStyle: 'mf-list__element--secondary-negative'
+                    };
+                }
+
+                if (connection.errorNeedsUserAuth()) {
+                    return {
+                        gradientStyle: 'invalid',
+                        connectionDetailMessage: 'The username and password provided were invalid',
+                        connectionManagementMessage: 'Update your information',
+                        bannerIcon: 'mf-icon__invalid',
+                        managementPageIcon: 'mf-icon__invalid-small',
+                        connectionManagementSecondaryStyle: 'mf-list__element--secondary-negative'
+                    };
+                }
+
+                return {
+                    gradientStyle: 'invalid',
+                    connectionDetailMessage: 'Unknown error occurred. Try refreshing the connection, it may fix the issue.',
+                    connectionManagementMessage: 'Unknown error',
+                    bannerIcon: 'mf-icon__invalid',
+                    managementPageIcon: 'mf-icon__invalid-small',
+                    connectionManagementSecondaryStyle: 'mf-list__element--secondary-negative'
+                };
+            }
+
+            if (connection.isUnsupported()) {
+                return {
+                    gradientStyle: 'unsupported',
+                    connectionDetailMessage: 'Your portal is not supported at this time',
+                    connectionManagementMessage: 'Not supported',
+                    bannerIcon: 'mf-icon__unsupported',
+                    managementPageIcon: 'mf-icon__unsupported-small',
+                    connectionManagementSecondaryStyle: 'mf-list__element--secondary'
+                };
+            }
+
+            return {
+                gradientStyle: '',
+                connectionDetailMessage: '',
+                connectionManagementMessage: '',
+                bannerIcon: '',
+                managementPageIcon: '',
+                connectionManagementSecondaryStyle: ''
+            };
+        },
+
+        getConnectionStatusText: function (connection) {
+            if (connection.isConnected()) {
                 return 'Successfully linked and receiving data.';
-            } else if (connection.needsUserAuth()) {
+            } else if (connection.errorNeedsUserAuth()) {
                 return 'We can\'t access this connection. Please verify and re-enter your login details.';
-            } else if (connection.needsUserInteraction()) {
-                if (connection.latestJob.jobStatusMessage) {
-                    return connection.latestJob.jobStatusMessage;
+            } else if (connection.errorNeedsUserInteraction()) {
+                if (connection.connectionStatusMessage) {
+                    return connection.connectionStatusMessage;
                 } else {
                     return 'Please log in and accept the organization\'s Terms of Service.';
                 }
-            } else if (connection.hasInternalError()) {
+            } else if (connection.hasUnknownError()) {
                 return 'Unable to sync your account data. Please check back shortly.';
-            } else if (connection.hasPortalError()) {
+                //} else if (connection.hasPortalError()) {
                 // need a better error message
-                return 'This organization cannot be synced at this time. Please check back later.';
+                //return 'This organization cannot be synced at this time. Please check back later.';
             } else if (connection.isRefreshing()) {
                 return 'We\'re currently checking the credentials of this connection.';
-            } else if (connection.associatedPortal.isUnderDevelopment()) {
+            } else if (connection.isUnderDevelopment()) {
                 return 'We\'re adding support for this provider. We\'ll fetch your data once this provider is added.';
-            } else if (connection.associatedPortal.isSuspended()) {
+            } else if (connection.isSuspended()) {
                 return 'This provider is experiencing connection issues. We\'ll fetch your data once that\'s fixed.';
+            } else if (connection.isPending()) {
+                return 'This is a pending portal. We\'ll fetch your data once this provider is added.'; //just placeholder text for now
             } else {
                 return '';
             }
         },
 
         // pass in the portal that you want to extend with functions to make it easier for the ui to find portal status
-        getExtendedPortal: function(portal) {
+        getExtendedPortal: function (portal) {
 
             var PORTAL_STATUS_TYPES = {
                 // If we don't get a recognized status from the backend, we use NULL
@@ -1990,18 +2857,18 @@ var mfUtils = (function() {
                 'IN_DEV': 'IN_DEV'
             };
 
-            portal.getPortalStatus = function() {
+            portal.getPortalStatus = function () {
                 if (portal.status && PORTAL_STATUS_TYPES.hasOwnProperty(portal.status)) {
                     return PORTAL_STATUS_TYPES[portal.status];
                 }
                 return PORTAL_STATUS_TYPES.NULL;
             };
 
-            portal.isActive = function() {
+            portal.isActive = function () {
                 return portal.getPortalStatus() === PORTAL_STATUS_TYPES.ACTIVE;
             };
 
-            portal.isConnectable = function() {
+            portal.isConnectable = function () {
                 return _.includes([
                     PORTAL_STATUS_TYPES.ACTIVE,
                     PORTAL_STATUS_TYPES.SUSPENDED,
@@ -2009,264 +2876,152 @@ var mfUtils = (function() {
                 ], portal.getPortalStatus());
             };
 
-            portal.isUnderDevelopment = function() {
+            portal.isUnderDevelopment = function () {
                 return portal.getPortalStatus() === PORTAL_STATUS_TYPES.IN_DEV;
             };
 
-            portal.isSuspended = function() {
+            portal.isSuspended = function () {
                 return portal.getPortalStatus() === PORTAL_STATUS_TYPES.SUSPENDED;
             };
 
-            portal.getPortalTypeName = function() {
+            portal.isInactive = function () {
+                return portal.getPortalStatus() === PORTAL_STATUS_TYPES.INACTIVE;
+            };
+
+            portal.getPortalTypeName = function () {
                 return portal.typeInfo.name;
             };
 
-            portal.isPendingPortal = function() {
+            portal.isPendingPortal = function () {
                 return this.getPortalTypeName() === "PLACEHOLDER_PORTAL";
             };
             return portal;
         },
 
-        // pass in the connection you would like to extend with more information for making it easier to call back on
-        // if portal is passed in, it should be an already extended portal
-        extendConnection: function(connection, portal) {
-            // These are the UI's self-made statuses for a connection: we look at the connection's portal,
-            // current job ticket (if any), and possibly some timestamps, then we make a judgment about what seems
-            // to be be going on.
+        extendConnection: function (connection, portal) {
             var CONNECTION_STATUS_TYPES = {
-                // This is our default; it should never actually occur unless there's a catastrophic js error
-                'NULL': 'NULL',
-                // 'Completed' basically means the connection looks healthy: it's enabled and has no errors and no
-                // ongoing tickets.
-                'COMPLETED_FULL':               'COMPLETED_FULL',
-                'COMPLETED_PARTIAL':            'COMPLETED_PARTIAL',
-                // 'Error' can mean there's a problem with the connection's portal, or with the last ticket
-                'ERROR_USER_AUTH':              'ERROR_USER_AUTH',
-                'ERROR_NEEDS_USER_INTERACTION': 'ERROR_NEEDS_USER_INTERACTION',
-                'ERROR_INTERNAL':               'ERROR_INTERNAL',
-                'ERROR_PORTAL_GONE':            'ERROR_PORTAL_GONE',
-                // If a portal is under development, we can't refresh it, but it's not an error
-                'PORTAL_UNDER_DEVELOPMENT':		'PORTAL_UNDER_DEVELOPMENT',
-                // If a portal is suspended, we can't refresh, but it's not an error
-                'PORTAL_SUSPENDED':				'PORTAL_SUSPENDED',
-                // 'Refreshing' means our last ticket has not completed yet (or maybe it hasn't even been started yet)
-                'REFRESHING_SCHEDULED':         'REFRESHING_SCHEDULED',
-                'REFRESHING_SUBMITTED':         'REFRESHING_SUBMITTED',
-                'REFRESHING_PROBABLY_SCRAPING': 'REFRESHING_PROBABLY_SCRAPING',
-                'REFRESHING_STALLED':           'REFRESHING_STALLED',
-                // This is used *only* for just-created connections in the end-to-end tests
-                'NEW_E2E_CONNECTION':           'NEW_E2E_CONNECTION'
-            };
-
-            // These are based on the backend's status types, found under latestJob.jobStatus
-            // (/common/claire-common/src/main/java/com/medfusion/claire/data/DreStatusType.java)
-            // The value under each index can be used to map/combine several statuses together (e.g., to treat
-            // unrecognized status values as errors.)
-            var JOB_STATUS_TYPES = {
-                // If we don't get a recognized status from the backend, we use NULL
-                'NULL': 'NULL',
-                // The rest of these are stolen directly from the backend
-                'SCHEDULED':                    'SCHEDULED',
-                'SUBMITTED':                    'SUBMITTED',
-                'SUBMITTED_STALE':              'SUBMITTED_STALE',
-                'WAITING':                      'WAITING',
-                'PARTIAL_SUCCESS':              'PARTIAL_SUCCESS',
-                'SUCCESS':                      'SUCCESS',
-                'ERROR_OTHER':                  'ERROR_OTHER',
-                'ERROR_USER_AUTH':              'ERROR_USER_AUTH',
-                'ERROR_NEEDS_USER_INTERACTION': 'ERROR_NEEDS_USER_INTERACTION',
-                'ERROR_USER_TOS':               'ERROR_NEEDS_USER_INTERACTION', // note that this is an alias
-                // These two values are *possible* future statuses; they're added here so that this version of
-                // the UI will handle them in a reasonably appropriate way if they do appear.
-                'PORTAL_UNREACHABLE':           'PORTAL_UNREACHABLE',
-                'UNREACHABLE':                  'PORTAL_UNREACHABLE'
-            };
-
-            // If a JOB_STATUS_TYPE *exactly maps* to a CONNECTION_STATUS_MAP, we put it here.
-            // See getConnectionStatus() for the full algorithm, though, because we don't always use this.
-            var mapJobStatusToConnectionStatus = {
-                'NULL':                         'ERROR_INTERNAL',
-                'SUBMITTED_STALE':              'ERROR_INTERNAL',
-                'PARTIAL_SUCCESS':              'COMPLETED_PARTIAL',
-                'WAITING':                      'COMPLETED_PARTIAL',
-                'SUCCESS':                      'COMPLETED_FULL',
-                'ERROR_OTHER':                  'ERROR_INTERNAL',
-                'ERROR_USER_AUTH':              'ERROR_USER_AUTH',
-                'ERROR_NEEDS_USER_INTERACTION': 'ERROR_NEEDS_USER_INTERACTION',
-                'PORTAL_UNREACHABLE':           'PORTAL_SUSPENDED'
+                'NO_PORTAL': 'NO_PORTAL',
+                'PORTAL_INACTIVE': 'PORTAL_INACTIVE',
+                'PORTAL_SUSPENDED': 'PORTAL_SUSPENDED',
+                'PORTAL_UNDER_DEVELOPMENT': 'PORTAL_UNDER_DEVELOPMENT',
+                'PENDING': 'PENDING',
+                'REFRESHING': 'REFRESHING',
+                'WAITING': 'WAITING',
+                'PARTIAL_SUCCESS': 'PARTIAL_SUCCESS',
+                'SUCCESS': 'SUCCESS',
+                'UNKNOWN_ERROR': 'UNKNOWN_ERROR',
+                'CREDENTIAL_ERROR': 'CREDENTIAL_ERROR',
+                'SECURITY_QUESTION': 'SECURITY_QUESTION',
+                'USER_INTERACTION': 'USER_INTERACTION',
+                'PROFILES_FOUND': 'PROFILES_FOUND',
+                'STATUS_UNKNOWN': 'STATUS_UNKNOWN',
+                'PLACEHOLDER': 'PLACEHOLDER'
             };
 
             if (portal) {
                 connection.associatedPortal = portal;
             }
 
-            connection.connectionHasCompleted = function() {
-                connection._hasEverSucceeded = true;
-
-                // idk what this should return
-                //return _.map(ConnectionService._connectionCompletionCallbacks, function(callbackFn) {
-                //  return callbackFn(this);
-                //}.bind(this));
-            };
-
-            connection.getConnectionStatus = function() {
-
-                var connectionStatus = CONNECTION_STATUS_TYPES.NULL;
-                var portalStatus = connection.associatedPortal && connection.associatedPortal.getPortalStatus();
-                var lastJobStatus = connection.getLastJobStatus();
-
-                if (!portalStatus || portalStatus !== 'ACTIVE') {
-                    // Portal problems take precedence over everything else.
-                    // We default to 'GONE' for missing/unknown values
-                    if (portalStatus === 'SUSPENDED') {
-                        connectionStatus = CONNECTION_STATUS_TYPES.PORTAL_SUSPENDED;
-                    } else if (portalStatus === 'IN_DEV') {
-                        connectionStatus = CONNECTION_STATUS_TYPES.PORTAL_UNDER_DEVELOPMENT;
-                    } else {
-                        connectionStatus = CONNECTION_STATUS_TYPES.ERROR_PORTAL_GONE;
-                    }
-                } else if (mapJobStatusToConnectionStatus.hasOwnProperty(lastJobStatus)) {
-                    // Many (but not all) lastJob types map directly to a connection type.
-                    connectionStatus = mapJobStatusToConnectionStatus[lastJobStatus];
-                } else {
-                    // For now, only 'SCHEDULED' and 'SUBMITTED' are left -- we process those differently based
-                    // on how long the connection has been in that state:
-                    //      Scheduled for <60s  = waiting in queue
-                    //      Scheduled for 60s+  = we seem to be stalled
-                    //      Submitted for <30s  = waiting in queue
-                    //      Submitted for 30s+ but <90s = we're probably scraping
-                    //      Submitted for 90s+  = we seem to be stalled
-                    var timeSinceLastStatusChange = Date.now() - connection._lastJobStatusChange;
-                    if (lastJobStatus === JOB_STATUS_TYPES.SCHEDULED) {
-                        if (timeSinceLastStatusChange < 60 * 1000) {
-                            connectionStatus = CONNECTION_STATUS_TYPES.REFRESHING_SCHEDULED;
-                        } else {
-                            connectionStatus = CONNECTION_STATUS_TYPES.REFRESHING_STALLED;
-                        }
-                    } else if (lastJobStatus === JOB_STATUS_TYPES.SUBMITTED) {
-                        if (timeSinceLastStatusChange < 30 * 1000) {
-                            connectionStatus = CONNECTION_STATUS_TYPES.REFRESHING_SUBMITTED;
-                        } else if (timeSinceLastStatusChange < 90 * 1000) {
-                            connectionStatus = CONNECTION_STATUS_TYPES.REFRESHING_PROBABLY_SCRAPING;
-                        } else {
-                            connectionStatus = CONNECTION_STATUS_TYPES.REFRESHING_STALLED;
-                        }
-                    } else {
-                        // If all else fails, assume it's an error of some sort
-                        connectionStatus = CONNECTION_STATUS_TYPES.ERROR_INTERNAL;
-                    }
-                }
-
-                if (connection._lastConnectionStatus !== connectionStatus) {
-                    // it's changed!
-                    //debugInfo('new connectionStatus: ' + this._lastConnectionStatus + ' -> ' + connectionStatus, this);
-                    connection._lastConnectionStatus = connectionStatus;
-                    connection._lastConnectionStatusChange = Date.now();
-
-                    if (connection.isCompleted()) {
-                        connection._hasEverSucceeded = true;
-                        //connection.connectionHasCompleted();
-                    }
-                }
-
-                return connectionStatus;
-            };
-
-            connection.getLastJobStatus = function() {
-                var jobStatus = connection.latestJob && connection.latestJob.jobStatus;
-                if (jobStatus) {
-                    if (JOB_STATUS_TYPES.hasOwnProperty(jobStatus)) {
-                        jobStatus = JOB_STATUS_TYPES[jobStatus];
-                    } else if (/^ERROR_/.test(jobStatus)) {
-                        // Special case: there's a new error status that we don't yet recognize.
-                        // We want to treat it as a generic error, instead of an unknown/recognized status.
-                        jobStatus = JOB_STATUS_TYPES.ERROR_OTHER;
-                    }
-                }
-                if (!jobStatus) {
-                    jobStatus = JOB_STATUS_TYPES.NULL;
-                }
-
-                if (connection._lastJobStatus !== jobStatus) {
-                    // it's changed!
-                    //debugInfo('new jobStatus: ' + this._lastJobStatus + ' -> ' + jobStatus, this);
-                    connection._lastJobStatus = jobStatus;
-                    connection._lastJobStatusChange = Date.now();
-                }
-
-                return jobStatus;
-            };
-
-            connection.isCompleted = function() {
-                //return _.includes([
-                //  CONNECTION_STATUS_TYPES.COMPLETED_FULL,
-                // CONNECTION_STATUS_TYPES.COMPLETED_PARTIAL
-                //], connection.getConnectionStatus());
-                if (connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.COMPLETED_FULL || connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.COMPLETED_PARTIAL) {
-                    return true;
-                }
-                return false;
-            };
-
-            connection.needsUserAuth = function() {
-                return connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.ERROR_USER_AUTH;
-            };
-
-            connection.needsUserInteraction = function() {
-                return connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.ERROR_NEEDS_USER_INTERACTION;
-            };
-
-            connection.hasInternalError = function() {
-                return connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.ERROR_INTERNAL;
-            };
-
-            connection.hasPortalError = function() {
-                return connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.ERROR_PORTAL_GONE;
-            };
-
-            connection.isRefreshing = function() {
-                if (connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.REFRESHING_SCHEDULED ||
-                    connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.REFRESHING_SUBMITTED ||
-                    connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.REFRESHING_PROBABLY_SCRAPING ||
-                    connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.REFRESHING_STALLED) {
-                    return true;
-                }
-                return false;
-            };
-
-            connection.hasAnyError = function() {
-                if (connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.ERROR_USER_AUTH ||
-                    connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.ERROR_NEEDS_USER_INTERACTION ||
-                    connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.ERROR_INTERNAL ||
-                    connection.getConnectionStatus() === CONNECTION_STATUS_TYPES.ERROR_PORTAL_GONE) {
-                    return true;
-                }
-                return false;
-            };
-
             // list of associated providers with reference to connectionId and status
-            connection.associatedProvidersList = [];
-            _.forEach(connection.providers, function(provider) {
-                // reference back to this connection
-                provider.connectionId = connection.id;
-                provider.connectionStatus = connection.getConnectionStatus();
-                connection.associatedProvidersList.push(provider);
-            });
+            connection.associatedProvidersList = connection.providers;
+
+            var status = connection.connectionStatus;
+
+            // may not need?
+            connection.getConnectionStatus = function () {
+                return connection.connectionStatus;
+            };
+
+            connection.isConnected = function () {
+                return status === CONNECTION_STATUS_TYPES.SUCCESS ||
+                    status === CONNECTION_STATUS_TYPES.PARTIAL_SUCCESS ||
+                    status === CONNECTION_STATUS_TYPES.PROFILES_FOUND;
+            };
+
+            connection.hasEverBeenSuccessful = function () {
+                return connection.hasEverSucceeded;
+            };
+
+            connection.errorNeedsUserAuth = function () {
+                return connection.needsCredentialUpdate;
+            };
+
+            connection.errorNeedsUserInteraction = function () {
+                return connection.needsUserInteraction;
+            };
+
+            connection.errorNeedsSecurityQuestions = function () {
+                return connection.needsSecurityQuestions;
+            };
+
+            connection.hasUnknownError = function () {
+                return status === CONNECTION_STATUS_TYPES.UNKNOWN_ERROR;
+            };
+
+            connection.noPortal = function () {
+                return status === CONNECTION_STATUS_TYPES.NO_PORTAL;
+            };
+
+            connection.isInactive = function () {
+                return status === CONNECTION_STATUS_TYPES.PORTAL_INACTIVE;
+            };
+
+            connection.isSuspended = function () {
+                return status === CONNECTION_STATUS_TYPES.PORTAL_SUSPENDED;
+            };
+
+            connection.isUnderDevelopment = function () {
+                return status === CONNECTION_STATUS_TYPES.PORTAL_UNDER_DEVELOPMENT;
+            };
+
+            connection.isPending = function () {
+                return connection.isPlaceholder;
+            };
+
+            connection.isRefreshing = function () {
+                return status === CONNECTION_STATUS_TYPES.REFRESHING;
+            };
+
+            connection.isScheduled = function () {
+                return status === CONNECTION_STATUS_TYPES.PENDING;
+            };
+
+            connection.isInDev = function () {
+                return connection.isUnderDevelopment();
+            };
+
+            connection.isUnsupported = function () {
+                return connection.isSuspended() ||
+                    connection.isInactive() ||
+                    connection.noPortal() ||
+                    (connection.isInDev() && !connection.isPending());
+            };
+
+	        connection.hasAnyError = function() {
+		        return connection.errorNeedsUserAuth() ||
+			        connection.errorNeedsSecurityQuestions() ||
+                    connection.errorNeedsUserInteraction() ||
+			        connection.hasUnknownError();
+	        };
+
+            connection.isRetrieving = function () {
+                return connection.isScheduled() ||
+                    connection.isRefreshing();
+            };
 
             return connection;
-
         }
     };
 })();
 
 module.exports = mfUtils;
 
-},{"../js/mf-connect-service.js":2,"bluebird":4,"lodash":6}],4:[function(require,module,exports){
-(function (process,global){
+},{"../js/mf-connect-service.js":4,"bluebird":6,"lodash":8}],6:[function(require,module,exports){
+(function (process,global,setImmediate){
 /* @preserve
  * The MIT License (MIT)
  * 
- * Copyright (c) 2013-2017 Petka Antonov
+ * Copyright (c) 2013-2018 Petka Antonov
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2288,7 +3043,7 @@ module.exports = mfUtils;
  * 
  */
 /**
- * bluebird build version 3.5.1
+ * bluebird build version 3.5.3
  * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, using, timers, filter, any, each
 */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Promise=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -2443,24 +3198,28 @@ if (!util.hasDevTools) {
     };
 }
 
-Async.prototype._drainQueue = function(queue) {
+function _drainQueue(queue) {
     while (queue.length() > 0) {
-        var fn = queue.shift();
-        if (typeof fn !== "function") {
-            fn._settlePromises();
-            continue;
-        }
+        _drainQueueStep(queue);
+    }
+}
+
+function _drainQueueStep(queue) {
+    var fn = queue.shift();
+    if (typeof fn !== "function") {
+        fn._settlePromises();
+    } else {
         var receiver = queue.shift();
         var arg = queue.shift();
         fn.call(receiver, arg);
     }
-};
+}
 
 Async.prototype._drainQueues = function () {
-    this._drainQueue(this._normalQueue);
+    _drainQueue(this._normalQueue);
     this._reset();
     this._haveDrainedQueues = true;
-    this._drainQueue(this._lateQueue);
+    _drainQueue(this._lateQueue);
 };
 
 Async.prototype._queueTick = function () {
@@ -2937,6 +3696,7 @@ var getDomain = Promise._getDomain;
 var async = Promise._async;
 var Warning = _dereq_("./errors").Warning;
 var util = _dereq_("./util");
+var es5 = _dereq_("./es5");
 var canAttachTrace = util.canAttachTrace;
 var unhandledRejectionHandled;
 var possiblyUnhandledRejection;
@@ -3055,6 +3815,7 @@ Promise.longStackTraces = function () {
     if (!config.longStackTraces && longStackTracesIsSupported()) {
         var Promise_captureStackTrace = Promise.prototype._captureStackTrace;
         var Promise_attachExtraTrace = Promise.prototype._attachExtraTrace;
+        var Promise_dereferenceTrace = Promise.prototype._dereferenceTrace;
         config.longStackTraces = true;
         disableLongStackTraces = function() {
             if (async.haveItemsQueued() && !config.longStackTraces) {
@@ -3062,12 +3823,14 @@ Promise.longStackTraces = function () {
             }
             Promise.prototype._captureStackTrace = Promise_captureStackTrace;
             Promise.prototype._attachExtraTrace = Promise_attachExtraTrace;
+            Promise.prototype._dereferenceTrace = Promise_dereferenceTrace;
             Context.deactivateLongStackTraces();
             async.enableTrampoline();
             config.longStackTraces = false;
         };
         Promise.prototype._captureStackTrace = longStackTracesCaptureStackTrace;
         Promise.prototype._attachExtraTrace = longStackTracesAttachExtraTrace;
+        Promise.prototype._dereferenceTrace = longStackTracesDereferenceTrace;
         Context.activateLongStackTraces();
         async.disableTrampolineIfNecessary();
     }
@@ -3083,10 +3846,14 @@ var fireDomEvent = (function() {
             var event = new CustomEvent("CustomEvent");
             util.global.dispatchEvent(event);
             return function(name, event) {
-                var domEvent = new CustomEvent(name.toLowerCase(), {
+                var eventData = {
                     detail: event,
                     cancelable: true
-                });
+                };
+                es5.defineProperty(
+                    eventData, "promise", {value: event.promise});
+                es5.defineProperty(eventData, "reason", {value: event.reason});
+                var domEvent = new CustomEvent(name.toLowerCase(), eventData);
                 return !util.global.dispatchEvent(domEvent);
             };
         } else if (typeof Event === "function") {
@@ -3097,6 +3864,8 @@ var fireDomEvent = (function() {
                     cancelable: true
                 });
                 domEvent.detail = event;
+                es5.defineProperty(domEvent, "promise", {value: event.promise});
+                es5.defineProperty(domEvent, "reason", {value: event.reason});
                 return !util.global.dispatchEvent(domEvent);
             };
         } else {
@@ -3245,6 +4014,7 @@ Promise.prototype._attachCancellationCallback = function(onCancel) {
 };
 Promise.prototype._captureStackTrace = function () {};
 Promise.prototype._attachExtraTrace = function () {};
+Promise.prototype._dereferenceTrace = function () {};
 Promise.prototype._clearCancellationData = function() {};
 Promise.prototype._propagateFrom = function (parent, flags) {
     ;
@@ -3348,6 +4118,10 @@ function longStackTracesAttachExtraTrace(error, ignoreSelf) {
             util.notEnumerableProp(error, "__stackCleaned__", true);
         }
     }
+}
+
+function longStackTracesDereferenceTrace() {
+    this._trace = undefined;
 }
 
 function checkForgottenReturns(returnValue, promiseCreated, name, promise,
@@ -3851,7 +4625,7 @@ return {
 };
 };
 
-},{"./errors":12,"./util":36}],10:[function(_dereq_,module,exports){
+},{"./errors":12,"./es5":13,"./util":36}],10:[function(_dereq_,module,exports){
 "use strict";
 module.exports = function(Promise) {
 function returner() {
@@ -5670,6 +6444,7 @@ Promise.prototype._fulfill = function (value) {
         } else {
             async.settlePromises(this);
         }
+        this._dereferenceTrace();
     }
 };
 
@@ -5764,7 +6539,7 @@ _dereq_("./synchronous_inspection")(Promise);
 _dereq_("./join")(
     Promise, PromiseArray, tryConvertToPromise, INTERNAL, async, getDomain);
 Promise.Promise = Promise;
-Promise.version = "3.5.1";
+Promise.version = "3.5.3";
 _dereq_('./map.js')(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL, debug);
 _dereq_('./call_get.js')(Promise);
 _dereq_('./using.js')(Promise, apiRejection, tryConvertToPromise, createContext, INTERNAL, debug);
@@ -7700,8 +8475,12 @@ function toFastProperties(obj) {
     /*jshint -W027,-W055,-W031*/
     function FakeConstructor() {}
     FakeConstructor.prototype = obj;
-    var l = 8;
-    while (l--) new FakeConstructor();
+    var receiver = new FakeConstructor();
+    function ic() {
+        return typeof receiver.foo;
+    }
+    ic();
+    ic();
     return obj;
     eval(obj);
 }
@@ -7886,8 +8665,8 @@ module.exports = ret;
 
 },{"./es5":13}]},{},[4])(4)
 });                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":7}],5:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").setImmediate)
+},{"_process":1,"timers":2}],7:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.3.1
  * https://jquery.com/
@@ -18253,7 +19032,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -18269,7 +19048,7 @@ return jQuery;
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.10';
+  var VERSION = '4.17.11';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -18533,7 +19312,7 @@ return jQuery;
   var reHasUnicode = RegExp('[' + rsZWJ + rsAstralRange  + rsComboRange + rsVarRange + ']');
 
   /** Used to detect strings that need a more robust regexp to match words. */
-  var reHasUnicodeWord = /[a-z][A-Z]|[A-Z]{2,}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
+  var reHasUnicodeWord = /[a-z][A-Z]|[A-Z]{2}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
 
   /** Used to assign default `context` object properties. */
   var contextProps = [
@@ -19479,20 +20258,6 @@ return jQuery;
       }
     }
     return result;
-  }
-
-  /**
-   * Gets the value at `key`, unless `key` is "__proto__".
-   *
-   * @private
-   * @param {Object} object The object to query.
-   * @param {string} key The key of the property to get.
-   * @returns {*} Returns the property value.
-   */
-  function safeGet(object, key) {
-    return key == '__proto__'
-      ? undefined
-      : object[key];
   }
 
   /**
@@ -21952,7 +22717,7 @@ return jQuery;
           if (isArguments(objValue)) {
             newValue = toPlainObject(objValue);
           }
-          else if (!isObject(objValue) || (srcIndex && isFunction(objValue))) {
+          else if (!isObject(objValue) || isFunction(objValue)) {
             newValue = initCloneObject(srcValue);
           }
         }
@@ -24873,6 +25638,22 @@ return jQuery;
         array[length] = isIndex(index, arrLength) ? oldArray[index] : undefined;
       }
       return array;
+    }
+
+    /**
+     * Gets the value at `key`, unless `key` is "__proto__".
+     *
+     * @private
+     * @param {Object} object The object to query.
+     * @param {string} key The key of the property to get.
+     * @returns {*} Returns the property value.
+     */
+    function safeGet(object, key) {
+      if (key == '__proto__') {
+        return;
+      }
+
+      return object[key];
     }
 
     /**
@@ -35362,190 +36143,4 @@ return jQuery;
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],7:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}]},{},[1]);
+},{}]},{},[3]);

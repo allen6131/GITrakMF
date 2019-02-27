@@ -2,7 +2,7 @@
 
 ## Initial installation:
 * Add the following to your bower.json file under dependencies
-    * "mf-connect":	"https://bitbucket.org/mfgit/mf-connect.git#1.2.0"
+    * "mf-connect":	"https://bitbucket.org/mfgit/mf-connect.git#2.0.0"
 * Run 'bower install' from  your terminal
 
 ## Including MfConnect if your project:
@@ -42,9 +42,6 @@ Add the following to launch MfConnect. This should be in the onClick function at
 
 MfConnect.prototype.launch(params);
 
-## Making final script file
-npm run build-js
-
 ## ChangeLog/Release notes
 
 #### Version 1.2.0 (9/1/2017)
@@ -73,3 +70,16 @@ npm run build-js
   - onDeleteProvider
   - onRefreshProvider
 - Disable auto-fill/auto-complete on credentials form
+
+#### Version 1.5.0 (10/25/2018)
+- Add deep linking functionality
+- Add recommended portals functionality
+
+#### Version 2.0.0 (TBD)
+- New UI/UX
+- Add search filters
+- Add search by portal URL
+- Validating credentials screen
+- Update styles for connection status
+- Display connections by portal name
+- Launch portal ability

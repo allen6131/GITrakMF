@@ -193,7 +193,7 @@ describe('mf-utils', function() {
         });
 
         it('should get directory search results', function() {
-            mfUtils.getDirectorySearchResults(searchTerm, zipCode);
+            mfUtils.findDirectoryLocations(searchTerm, zipCode);
         });
 
         // provider

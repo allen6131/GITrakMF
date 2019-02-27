@@ -1,6 +1,6 @@
 {
   "name": "medfusion-connect",
-  "version": "1.4.0",
+  "version": "2.0.1",
   "private": true,
   "author": {
     "name": "Medfusion"
@@ -24,6 +24,7 @@
     "browserify-shim": "^3.8.12",
     "chai": "^3.5.0",
     "del": "^2.2.2",
+    "eslint": "^5.10.0",
     "glob": "^7.1.1",
     "gulp": "^3.9.1",
     "gulp-browserify": "^0.5.1",
@@ -62,5 +63,6 @@
   "scripts": {
     "test": "karma start karma.conf.js",
     "build-js": "browserify app-src/js/main.js > public/js/mf-connect.js && gulp build"
-  }
+  },
+  "dependencies": {}
 }

@@ -10,6 +10,35 @@ p {
 	a {
 		text-decoration: underline;
 	}
+
+	&.no-margin-bottom {
+		margin-bottom: 0;
+	}
+
+	&.small-text {
+		font-size: 14px;
+	}
+
+	&.validating-creds-text {
+		font-size: 12px;
+		color: $mf-color__gray--accessible;
+		text-align: right;
+		margin-top: -24px;
+	}
+
+	&.privacy-statement {
+		color: $mf-product-color__medfusion;
+		margin-top: -30px;
+		margin-left: $mf-buffer__large;
+
+		@media (min-width: map-get($mf-breakpoints, medium)) {
+			margin-left: $mf-buffer__medium;
+		}
+	}
+
+	&.semibold {
+		font-weight: 600;
+	}
 }
 
 @media (min-width: map-get($mf-breakpoints, medium)) {
